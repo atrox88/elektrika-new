@@ -1,0 +1,93 @@
+ECM.BlogSettings = KO.Model({
+    Date_Created: {
+        binding: "value",
+        userChange: function () {
+            update_relevant_property('date-created', this.val(), this.__$elem);
+        }
+    },
+    Intro: {
+        binding: "value",
+        userChange: function () {
+            update_relevant_property('intro', this.val(), this.__$elem);
+        }
+    },
+    Manufacturer_Code: {
+        binding: "tlselect",
+        userChange: function () {
+            update_relevant_property('manufacturer', this.val(), this.__$elem);
+        }
+    },
+    Banner_Title: {
+        binding: "value",
+        userChange: function () {
+            update_relevant_property('banner-title', this.val(), this.__$elem);
+        }
+    }
+});
+
+$(function() {
+    ECM.BlogSettings = ECM.BlogSettings($('#blog-settings'));
+
+    $('#blog-settings .js-tag input[type=checkbox], #blog-settings .js-cat input[type=checkbox]').click(function(){
+
+        var tag_arr = [];
+        var cat_arr = [];
+        $('.js-tag input:checked').each(function(){
+            tag_arr.push($(this).attr('name'));
+        });
+        tag_arr = JSON.stringify(tag_arr);
+
+        $('.js-cat input:checked').each(function(){
+            cat_arr.push($(this).attr('name'));
+        });
+        cat_arr = JSON.stringify(cat_arr);
+        update_relevant_property('categories', cat_arr, $(this));
+        update_relevant_property('tags',tag_arr, $(this));
+    });
+
+    $('#blog-settings .js-public input[type=checkbox]').click(function(){
+        update_relevant_property('public', $(this).prop('checked'), $(this));
+    });
+    $('#blog-settings .js-show-on-frontpage input[type=checkbox]').click(function(){
+        update_relevant_property('show-on-frontpage', $(this).prop('checked'), $(this));
+    });
+
+    $('#blog-settings .js-blog-add-img-btn').click(function(){
+        var $this = $(this);
+        var $img = $this.closest('div.group').find('.js-blog-img-src').first();
+        window.KCFinder = {};
+        window.KCFinder.callBack = function(url) {
+            window.KCFinder = null;
+
+            $img.html('<img class="blog-img" src="'+url+'" alt="" />');
+            $this.html('Aizstāt');
+            update_relevant_property($this.data("id"),url, $img);
+        };
+        newwindow=window.open('/kcfinder/browse.php?type=images', 'KCFfinder','width=800,height=600,toolbar=0,menubar=0,location=0');
+        if (window.focus) {newwindow.focus()}
+    });
+
+    $('#blog-settings .js-delete-img').click(function(){
+        var $this = $(this);
+        var $img = $this.closest('div.group').find('.js-blog-img-src').first();
+        var $add_btn = $this.closest('div.group').find('.js-blog-add-img-btn').first();
+
+        $.ajax('/news/__delete-image', {
+            method: "POST",
+            data: {
+                CSRF_Token: $("#CSRF_Token").val(),
+                Blog_ID: $this.data("url")
+            },
+            error: function(error) {
+                alert('Radās iekšēja kļūda, lūdzu, sazinieties ar atbalsta dienestu');
+            },
+            success: function(data) {
+                $img.html('');
+                $add_btn.html('Pārlūkot');
+            }
+        });
+    });
+
+});
+
+

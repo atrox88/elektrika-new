@@ -1,0 +1,136 @@
+.modal-display.active {
+    display: block;
+}
+.modal-display {
+    display: none;
+}
+
+.fancy-input .message {
+    display: none;
+}
+.fancy-input.error .message {
+    display: inline-block;
+    color: #f35e60;
+    font-size: 12px;
+    margin-top: 5px;
+}
+.fancy-input.error input, .fancy-input.error textarea{
+    border-color: #f35e60;
+}
+textarea.w100h100px{
+    max-width:100%;
+    min-width:100%;
+    min-height:100px;
+    margin-bottom: 15px;
+    padding-left: 0;
+    padding-right: 0;
+}
+
+/* CMS Edit Button */
+.cms-container .cms-pane .cms-button {
+    background-color: #f25f5c;
+    border: 1px solid #f25f5c;
+    color: #ffffff;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 20px;
+    z-index: 9999;
+    padding: 1px 20px 1px 20px;
+    margin-right: 10px;
+}
+.cms-container .cms-pane {
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    height: 40px;
+    text-align: center;
+}
+
+.cms-template .cms-button {
+    background-color: #ff6600;
+    padding: 1px;
+    border: 1px solid #ff6600;
+    color: #ffffff;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-size: 20px;
+    z-index: 9999;
+    float: right;}
+
+
+/*CMS Save pane*/
+.create-ui-toolbar-wrapper {
+    min-height: auto !important;
+}
+.create-ui-toolbar-wrapper .create-ui-btn {
+    margin-top: 15px;
+}
+.midgardNotifications-container .midgardNotifications-item-outer {
+    z-index: 1999 !important;
+    top: 60px !important;
+}
+
+/*CMS meta*/
+.cms-meta h1 {
+    color: #f00;
+    font-size: 1.25em;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+.cms-meta .label {
+    color: #f00;
+    font-size: 1em;
+    font-weight: bold; }
+.cms-meta .cms-settings {
+    display: table;
+    width: 100%; }
+.cms-meta .cms-settings .group {
+    display: table-row; }
+.cms-meta .cms-settings .group > * {
+    display: table-cell; }
+.cms-meta .cms-settings .group .label {
+    padding: 10px 10px 0 10px;
+    vertical-align: top;
+    width: 180px;
+    text-align: left;
+}
+.cms-meta .cms-settings .group .value {
+    padding: 10px 0 0 0;
+    vertical-align: top; }
+.cms-meta .cms-settings .group .value textarea {
+    width: 100%;
+    height: 80px; }
+.cms-meta .cms-settings .group .value input {
+    width: 320px; }
+.cms-meta .cms-settings .group .value .blog-img {
+    display: block;
+    width: 200px;
+    height: auto;
+    margin-bottom: 10px; }
+.cms-meta .cms-settings .group .value button.delete {
+    margin-bottom: 10px;
+    background: red; }
+
+.ajax-overlay {
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgba(255, 255, 255, 0.8);
+    border: none;
+}
+
+/*cms button delete*/
+.cms-container .cms-pane .cms-button.cms-delete{
+    background-color: #333;
+    float: right;
+    font-size: 10px;
+}
+
+/*cart shipping coment padding fix*/
+.ecm-padding-fix{
+    padding-right: 0;
+    padding-left: 0;
+}

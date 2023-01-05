@@ -1,0 +1,358 @@
+ECM.ACCategory = KO.Model({
+    term: {
+	binding: "text",
+	refType: "link",
+    },
+    name: {
+	binding: "text",
+	refType: "link",
+    },
+    url: {
+	binding: "attr[data-href]",
+	refType: "top",
+    },
+});
+
+ECM.ACKeyword = KO.Model({
+    name: {
+	binding: "text",
+	refType: "top",
+    },
+    url: {
+	binding: "attr[data-href]",
+	refType: "top",
+    },
+});
+
+ECM.ACItem = KO.Model({
+    name: {
+	binding: "text",
+	refType: "link",
+    },
+    url: {
+	binding: "attr[href]",
+	refType: "link",
+    },
+    image: {
+	binding: "attr[src]",
+	refType: "link",
+    },
+	price: {
+        binding: "text",
+        refType: "link",
+	},
+    in_stock: {
+        binding: "class[hidden]",
+        type: "negated",
+        refType: "link",
+    },
+    order_only: {
+        binding: "class[hidden]",
+        type: "negated",
+        refType: "link",
+    },
+    manufacturer: {
+        binding: "text",
+        refType: "link",
+    }
+});
+
+ECM.ACForm = KO.Model({
+    show_items: {
+	binding: "class[hidden]",
+	type: "negated",
+	refType: "link",
+	refName: "item_block",
+    },
+    show_keywords: {
+	binding: "class[hidden]",
+	type: "negated",
+	refType: "link",
+	refName: "keyword_block",
+    },
+    show_categories: {
+	binding: "class[hidden]",
+	type: "negated",
+	refType: "link",
+	refName: "category_block",
+    },
+    show_results: {
+	binding: "class[hidden]",
+	type: "negated",
+	refType: "link",
+	refName: "result_block",
+    },
+    show_suggestions: {
+	binding: "class[hidden]",
+	type: "negated",
+	refType: "link",
+	refName: "suggestion_block",
+    },
+    suggestions_active: {
+	binding: "class[hidden]",
+	type: "negated",
+	refType: "link",
+    },
+    suggestions: {
+	binding: "collection",
+	refType: "link",
+	model: ECM.ACCategory,
+    },
+    categories: {
+	binding: "collection",
+	refType: "link",
+	model: ECM.ACCategory,
+    },
+    keywords: {
+	binding: "collection",
+	refType: "link",
+	model: ECM.ACKeyword,
+    },
+    items: {
+	binding: "collection",
+	refType: "link",
+	model: ECM.ACItem,
+    }
+});
+
+(function() {
+    var lastTerm = '';
+    var lastComplete = '';
+    var $itemTemplate;
+    var $categorySearchTemplate;
+    var $categoryTemplate;
+    var $keywordTemplate;
+    var $keywordSuggTemplate;
+
+    if (!String.prototype.startsWith) {
+	String.prototype.startsWith = function(searchString, position){
+	    position = position || 0;
+	    return this.substr(position, searchString.length) === searchString;
+	};
+    }
+
+    var addClicks = function($search) {
+	$('#header-search-popup [data-href]').click(function() {
+	    window.location = $(this).attr('data-href');
+	});
+    }
+
+    var activateAC = function() {
+		$('#header-search-popup').addClass('active');
+		$("#category-background-mask").addClass('active-mobile');
+		ECM.focusAreas.push($('#header-search-popup'));
+		$('#category-background-mask').click(function () {
+			$('#category-background-mask').removeClass('active-mobile');
+		});
+    }
+
+    var deactivateAC = function() {
+		$('#header-search-popup').removeClass('active');
+		$("#category-background-mask").removeClass('active-mobile');
+    }
+
+    var autocomplete = function($search) {
+	var term = $search.val().trim();
+	if (term.length < 2) {
+	    lastComplete = '';
+	    deactivateAC();
+	    lastTerm = 'zzzzzzzzz';
+	    return;
+	}
+
+	if (!term.startsWith(lastTerm)) {
+	    lastComplete = '';
+	    deactivateAC();
+	}
+	lastTerm = term;
+
+	setTimeout(function() {
+	    if (term != lastTerm) {
+		return;
+	    }
+
+	    $.ajax('/__autocomplete', {
+		method: "POST",
+		dataType: "json",
+		data: {
+		    "CSRF_Token": $("#CSRF_Token").val(), 
+		    "term": term
+		},
+		success: function(data) {
+		    if (lastTerm.startsWith(data.term) && lastComplete.length < data.term.length) {
+			console.log(data);
+			lastComplete = data.term;
+
+			// $.each(ECM.acForm.mref("categories").lineArr(), function (idx, category) {
+			//     ECM.acForm.mref("categories").remove(category);
+			// });
+			// if (data.categories.length > 0) {
+			//     ECM.acForm.mval("show_categories", true);
+			//     $.each(data.categories, function(idx, category) {
+			// 	$template = (category.type == 'cat' ? $categoryTemplate : $categorySearchTemplate);
+			// 	ECM.acForm.mref("categories").add({
+			// 	    term: data.term,
+			// 	    name: category.name,
+			// 	    url: category.url,
+			// 	}, $template);
+			//     });
+			// } else {
+			//     ECM.acForm.mval("show_categories", false);
+			// }
+
+			// $.each(ECM.acForm.mref("keywords").lineArr(), function (idx, keyword) {
+			//     ECM.acForm.mref("keywords").remove(keyword);
+			// });
+			// if (data.keywords.length > 0) {
+			//     ECM.acForm.mval("show_keywords", true);
+			//     $.each(data.keywords, function(idx, keyword) {
+			// 	ECM.acForm.mref("keywords").add({
+			// 	    name: keyword.name,
+			// 	    url: keyword.url,
+			// 	}, $keywordTemplate);
+			//     });
+			// } else {
+			//     ECM.acForm.mval("show_keywords", false);
+			// }
+
+			$.each(ECM.acForm.mref("items").lineArr(), function (idx, item) {
+			    ECM.acForm.mref("items").remove(item);
+			});
+			if (data.items.length > 0) {
+			    ECM.acForm.mval("show_items", true);
+
+			    $.each(data.items, function(idx, item) {
+				ECM.acForm.mref("items").add({
+				    name: item.name,
+				    url: item.url,
+				    image: item.image,
+					price: item.price + ' €',
+					in_stock: (item.inventory > 0),
+                    order_only: !(item.inventory > 0),
+                    manufacturer: item.manufacturer
+				}, $itemTemplate);
+			    });
+			} else {
+			    ECM.acForm.mval("show_items", false);
+			}
+
+			$.each(ECM.acForm.mref("suggestions").lineArr(), function (idx, suggestion) {
+			    ECM.acForm.mref("suggestions").remove(suggestion);
+			});
+			if (data.suggestions.length > 0) {
+			    ECM.acForm.mval("show_suggestions", true);
+			    $.each(data.suggestions, function(idx, suggestion) {
+				$template = (suggestion.type === 0 ? $categoryTemplate : $keywordSuggTemplate);
+				ECM.acForm.mref("suggestions").add({
+				    term: suggestion.name,
+				    name: suggestion.name,
+				    url: suggestion.url,
+				}, $template);
+			    });
+			    ECM.acForm.mval("suggestions_active", true);
+			} else {
+			    ECM.acForm.mval("suggestions_active", false);
+			}
+
+			if (data.items.length > 0) {
+			    ECM.acForm.mval("show_suggestions", false);
+			    ECM.acForm.mval("show_results", true);
+			} else {
+			    ECM.acForm.mval("show_suggestions", true);
+			    ECM.acForm.mval("show_results", false);
+			}
+
+			addClicks($search);
+			activateAC();
+		    }
+		}
+	    });
+	}, 400);
+    }
+
+    $(function() {
+	var $search = $('#header-search');
+	$itemTemplate = $('#header-search-templates > .item');
+	// $categorySearchTemplate = $('#header-search-templates > .category');
+	// $categoryTemplate = $('#header-search-templates > .category-link');
+	// $keywordTemplate = $('#header-search-templates > .keyword');
+	// $keywordSuggTemplate = $('#header-search-templates > .keyword-suggestion');
+
+	ECM.acForm = ECM.ACForm($('#header-search-popup'));
+
+	$search.keydown(function(ev) {
+	    if (ev.which === 40) { // Arrow down
+		ev.preventDefault();
+
+		var $current = $('#header-search-popup .selectable.selected');
+		if ($current.length > 0) {
+		    $current.removeClass('selected');
+		    var elemIdx = -2;
+		    $('#header-search-popup .selectable').each(function (idx, element) {
+			if (element == $current[0]) {
+			    elemIdx = idx;
+			}
+			if (idx == elemIdx + 1) {
+			    $(element).addClass('selected');
+			}
+		    });
+		} else {
+		    $('#header-search-popup .selectable').first().addClass('selected');
+		}
+	    }
+
+	    if (ev.which === 38) { // Arrow up
+		ev.preventDefault();
+
+		var $current = $('#header-search-popup .selectable.selected');
+		if ($current.length > 0) {
+		    $current.removeClass('selected');
+		    var elemIdx = -2;
+		    $('#header-search-popup .selectable').each(function (idx, element) {
+			if (element == $current[0]) {
+			    elemIdx = idx;
+			}
+		    });
+		    $('#header-search-popup .selectable').each(function (idx, element) {
+			if (idx == elemIdx - 1) {
+			    $(element).addClass('selected');
+			}
+		    });
+		} else {
+		    $('#header-search-popup .selectable').last().addClass('selected');
+		}
+	    }
+
+	    if (ev.which === 13) { // Enter
+		var $current = $('#header-search-popup .selectable.selected');
+		if ($current.length > 0) {
+		    ev.preventDefault();
+		    window.location = $current.attr('data-href');
+		}
+	    }
+
+	    if (ev.which === 9) { // TAB
+		var $current = $('#header-search-popup .selectable.selected');
+		if ($current.length > 0) {
+		    ev.preventDefault();
+		    if ($current.hasClass('keyword') || $current.hasClass('keyword-suggestion')) {
+			$search.val($current.text());
+			autocomplete($search);
+		    } else {
+			window.location = $current.attr('data-href');
+		    }
+		}
+	    }
+	});
+
+	$search.keyup(function(ev) {
+	    if (ev.which === 27) { // ESC
+		deactivateAC();
+	    } else {
+		if ($search.val().length != lastTerm.length) {
+		    autocomplete($search);
+		}
+	    }
+	});
+    });
+})();

@@ -1,0 +1,76 @@
+ECM.Subscribe = KO.Model({
+    subscribe_email: {
+        binding: "tlinput",
+        userChange: function() {
+            this.parent.mval("subscribe_success_visible", false);
+        }
+    },
+    agree_privacy_policy: {
+        binding: "checkbox",
+        userChange: function () {
+            if (this.val()){
+                this.__$elem.parent().removeClass('required-checkbox');
+            }
+        }
+    },
+    subscribe_success_visible: {
+        binding: "class[hidden]",
+        type: "negated",
+        refType: "link",
+    },
+    subscribe: {
+        binding: "click",
+        userChange: function() {
+            var subscribe = this.parent;
+            subscribe.mval("subscribe_success_visible", false);
+            subscribe.mval("subscribe_email", subscribe.mval("subscribe_email").toLowerCase());
+
+            var fieldError = false;
+            var checkBlank = function(field) {
+                if (!$.trim(subscribe.mval(field))) {
+                    subscribe.mref(field).meta("error", "See väli on kohustuslik ");
+                    fieldError = true;
+                }
+            };
+            checkBlank("subscribe_email");
+            if (fieldError){
+                return false;
+            }
+            if(!subscribe.mval('agree_privacy_policy')){
+                subscribe.mref('agree_privacy_policy').__$elem.parent().addClass('required-checkbox');
+                return false;
+            }
+
+            var subscribeData = subscribe.val();
+            subscribeData["CSRF_Token"] = $("#CSRF_Token").val();
+            $.ajax("/__subscribe", {
+                method: "POST",
+                data: subscribeData,
+                dataType: "json",
+                error: function(error) {
+                    console.error(error.responseText);
+                    alert('Tekkis süsteemisisene viga, palun võtke ühendust tugiteenuse osutajaga');
+                },
+                success: function(data) {
+                    if (data.field_errors) {
+                        $.each(data.field_errors, function(field, error) {
+                            subscribe.mref(field).meta("error", error);
+                        });
+                    } else if (data.error) {
+                        subscribe.mref('subscribe_email').meta("error", data.error);
+                    } else if (data.success) {
+                        subscribe.mval("subscribe_success_visible", true);
+                    }
+                    subscribe.mval("subscribe_email", "");
+                    subscribe.mval('agree_privacy_policy', false)
+                },
+            });
+        },
+    },
+});
+
+$(function() {
+    $(".js-subscribe-form").each(function() {
+        ECM.Subscribe($(this));
+    });
+});

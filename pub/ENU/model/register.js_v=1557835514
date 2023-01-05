@@ -1,0 +1,90 @@
+ECM.Recover = KO.Model({
+    E_Mail: {
+        binding: "tlinput",
+    },
+    password: {
+        binding: "tlinput",
+    },
+    password_repeated: {
+        binding: "tlinput",
+    },
+    subscribe: {
+        binding: "checkbox"
+    },
+    B2C_PP_Accepted: {
+        binding: "checkbox",
+        userChange: function () {
+            if (this.val()){
+                this.__$elem.parent().removeClass('required-checkbox');
+            }
+        }
+    },
+    error: {
+        binding: ECM.Error,
+        refType: "link",
+    },
+    register_submit: {
+        binding: "click",
+        userChange: function() {
+            var register = this.parent;
+
+            var fieldError = false;
+            var checkBlank = function(field) {
+                if (!$.trim(register.mval(field))) {
+                    register.mref(field).meta("error", "This field is mandatory");
+                    fieldError = true;
+                }
+            };
+            checkBlank("E_Mail");
+            checkBlank("password");
+            checkBlank("password_repeated");
+            if(!register.mval('B2C_PP_Accepted')){
+                register.mref('B2C_PP_Accepted').__$elem.parent().addClass('required-checkbox');
+                fieldError = true;
+            }
+
+            if (fieldError){
+                return false;
+            }
+
+            var registerData = register.val();
+            registerData["CSRF_Token"] = $("#CSRF_Token").val();
+            $.ajax("/register", {
+                method: "POST",
+                data: registerData,
+                dataType: "json",
+                error: function(error) {
+                    console.error(error.responseText);
+                    alert('An internal error has occurred, please contact support');
+                },
+                success: function(data) {
+                    if (data.field_errors) {
+                        $.each(data.field_errors, function(field, error) {
+                            if(field === "checkbox_err") {
+                                $.each(error, function (field, error_msg) {
+                                    if (register.__fields.hasOwnProperty(field)) {
+                                        register.mref(field).__$elem.parent().addClass('required-checkbox');
+                                    }
+                                });
+                            }else{
+                                register.mref(field).meta("error", error);
+                            }
+                        });
+                    } else if (data.error) {
+                        register.mval("error.title", data.error.title);
+                        register.mval("error.description", data.error.description);
+                        register.mref('error.comment').__$elem.html(data.error.comment_w_href);
+                        register.mval("error.visible", true);
+                    } else if (data.success) {
+                        window.location = data.success;
+                    }
+                },
+            });
+        },
+    },
+});
+
+$(function() {
+    $('input').attr('autocomplete', 'off');
+    ECM.recover = ECM.Recover($("#register-form"));
+});

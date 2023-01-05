@@ -1,0 +1,115 @@
+var B2BAJAX = {
+    just_loaded: false, // Workaround for safari popping on load
+
+    last_request_id: 0,
+    initial_contents: null,
+
+    ajax_callback: function(data) { return {}; },
+    on_ajax: function(fn) {
+        var old_callback = B2BAJAX.ajax_callback;
+        B2BAJAX.ajax_callback = function(data) {
+            return $.extend(old_callback(data), fn(data));
+        };
+    },
+
+    pop_callback: function(event) {},
+    on_pop: function(fn) {
+        var old_callback = B2BAJAX.pop_callback;
+        B2BAJAX.pop_callback = function(event) {
+            fn(event);
+            old_callback(event);
+        };
+    },
+    
+    ajax_loaded_callback: function(event) {},
+    on_ajax_loaded: function(fn) {
+        var old_callback = B2BAJAX.ajax_loaded_callback;
+        B2BAJAX.ajax_loaded_callback = function(event) {
+            fn(event);
+            old_callback(event);
+        };
+    },
+    
+    load_contents: function(newlink, scroll) {
+        B2BAJAX.last_request_id += 1;
+
+        if (!B2BAJAX.initial_contents) {
+            B2BAJAX.initial_contents = $('.js-ajax-contents').html();
+        }
+
+        if (newlink.indexOf("append") == -1) {
+            $('.ajax-overlay').show();
+        }
+
+        if (newlink.indexOf("?") > -1) {
+            ajaxlink = newlink + "&ajax=t";
+        } else {
+            ajaxlink = newlink + "?ajax=t";
+        }
+        ajaxlink = ajaxlink + "&ajax_id=" + B2BAJAX.last_request_id;
+
+        $.ajax(ajaxlink,
+               {
+                   dataType: "json",
+                   error: function(error) { window.location = newlink; },
+                   success: function(data) {
+                       if (data.ajax_id == B2BAJAX.last_request_id) {
+                           history.pushState(
+                               $.extend(
+                                   {
+                                       contents: data.html,
+                                       title: data.title,
+                                       dummy: true // Safari/old chrome workaround for popstate on page load
+                                   }, 
+                                   B2BAJAX.ajax_callback(data)),
+                               data.title, 
+                               newlink);
+                           document.title = data.title;
+                           if (newlink.indexOf("append") != -1) {
+                               $('.load-more-container').remove();
+                               $('#main-product-list .item-grid').append(data.html);
+                           }
+                           else {
+                               $('.js-ajax-contents').html(data.html);
+                           }
+                           $('.ajax-overlay').hide();
+                           B2BAJAX.register_links();
+                           B2BAJAX.ajax_loaded_callback();
+                           if (data.gtmData) {
+                               dataLayer.push(data.gtmData);
+                           }
+
+                           // comman.js reload grid switch
+                           productListGridSwitch();
+                           $('.selectpicker').selectpicker();
+                       }
+                   }
+               });
+        if (scroll) {
+            $('body, html').animate({
+	        scrollTop: $('.js-ajax-contents').offset().top
+	    }, 600);
+        }
+
+    },
+
+    register_links: function() {
+        $('a.js-ajax-link').click(function() { B2BAJAX.load_contents($(this).attr('href'), $(this).hasClass('js-scroll-to-top')); return false; });
+    }
+}
+
+$(function() {
+    if (history.pushState) {
+        window.onpopstate = function(event) {
+            if (event.state.contents) {
+                $('.js-ajax-contents').html(event.state.contents);
+                B2BAJAX.pop_callback(event);
+                B2BAJAX.register_links();
+            } else if (event.state.dummy) {
+                location.reload();
+            }
+        };
+        history.replaceState({ dummy: true }, window.title, window.location); // Safari workaround
+        B2BAJAX.register_links();
+    }
+});

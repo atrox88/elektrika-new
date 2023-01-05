@@ -1,0 +1,203 @@
+/* ECM styled multiple choice buttons */
+KO.bindings.tloptbtn = Object.create(KO.binding);
+KO.bindings.tloptbtn.__init = function(className) {
+    KO.binding.__init.call(this);
+    this.__className = className;
+}
+
+KO.bindings.tloptbtn.__bindNext = function($elem) {
+    if ($elem.hasClass(this.__className)) {
+	this.__value = $elem.val();
+    }
+
+    if (!this.__$elem) {
+	this.__$elem = {};
+    }
+    this.__$elem[$elem.val()] = $elem;
+
+    var self = this;
+    $elem.click(function() {
+	self.__userSetVal($elem.val());
+        $elem.addClass(self.__className);
+    });
+
+    this.change(function(oldVal) {
+	if (self.__$elem[oldVal]) {
+	    self.__$elem[oldVal].removeClass(self.__className);
+	}
+    });
+}
+
+KO.bindings.tloptbtn.__setVal = function() {
+    if (this.__$elem[this.__value]) {
+	this.__$elem[this.__value].addClass(this.__className);
+    } else {
+        var self = this;
+	$.each(this.__$elem, function(idx, $elem) {
+	    $elem.removeClass(self.__className);
+	});
+    }
+}
+
+
+/* TL styled price fields */
+KO.bindings.tlprice = Object.create(KO.bindings.text);
+KO.bindings.tlprice.__bindNext = function($elem) {
+    if (this.__$elem !== null) {
+	KO.warn("Re-binding text binding.");
+    }
+    this.__value = $elem.find(".euro").text() + $elem.find(".cents").text();
+    this.__$elem = $elem;
+}
+
+KO.bindings.tlprice.__setVal = function() {
+    var priceParts = /^(.*\.)(.*)$/;
+    var match = this.__value.match(priceParts);
+    this.__$elem.find(".euro").text(match[1]);
+    this.__$elem.find(".cents").text(match[2]);
+}
+
+
+KO._addFancyMetas = function(metaVar, $container) {
+    metaVar.$container = $container;
+    metaVar.label = $container.find("label").text();
+    metaVar.visible = !$container.hasClass("hidden");
+    if ($container.hasClass("error")) {
+        var msg = $container.find(".message").text();
+        if (msg) {
+            metaVar.error = msg;
+        } else {
+            metaVar.error = true;
+        }
+    } else {
+        metaVar.error = false;
+    }
+}
+
+KO._trySetFancyMeta = function(metaVar, ref, val) {
+    if (!metaVar || !metaVar.$container) {
+        KO.warn("Fancy wrapper not found");
+        return false;
+    }
+    if (ref === "label") {
+        metaVar[ref] = val;
+        metaVar.$container.find("label").text(val);
+    } else if (ref === "visible") {
+        metaVar[ref] = val;
+        if (val) {
+            metaVar.$container.removeClass("hidden");
+        } else {
+            metaVar.$container.addClass("hidden");
+        }
+    } else if (ref === "error") {
+        if (val === true) {
+            metaVar.$container.find(".message").addClass("hidden");
+            metaVar.$container.addClass("error");
+        } else if (val) {
+            metaVar.$container.find(".message").text(val);
+            metaVar.$container.find(".message").removeClass("hidden");
+            metaVar.$container.addClass("error");
+        } else {
+            metaVar.$container.removeClass("error");
+            metaVar.$container.find("input").removeClass("error");
+        }
+    } else {
+        return false;
+    }
+    return true;
+}
+
+/* TL styled fancy inputs */
+KO.bindings.tlinput = Object.create(KO.binding);
+
+KO.bindings.tlinput.__bindNext = function($elem) {
+    if (this.__$elem !== null) {
+	KO.warn("Re-binding value binding.");
+    }
+    this.__value = $elem.val();
+    this.__$elem = $elem;
+
+    this.__meta = {};
+    KO._addFancyMetas(this.__meta, this.__$elem.parent());
+
+    var self = this;
+    $elem.change(function() {
+	self.__userSetVal(self.__$elem.val());
+    });
+
+    this.userChange(function() {
+        KO._trySetFancyMeta(this.__meta, "error", false);
+    });
+}
+
+KO.bindings.tlinput.__setVal = function() {
+    this.__$elem.val(this.__value);
+    if (this.__value) {
+        this.__meta.$container.addClass("filled");
+    } else {
+        this.__meta.$container.removeClass("filled");
+    }
+}
+
+KO.bindings.tlinput.__setMeta = function(ref, val) {
+    if (!KO._trySetFancyMeta(this.__meta, ref, val)) {
+        KO.warn("TLInput meta '" + ref + "' is not settable");
+    }
+}
+
+/* TL styled fancy selects */
+KO.bindings.tlselect = Object.create(KO.bindings.select);
+
+KO.bindings.tlselect.__bindNext = function($elem) {
+    KO.bindings.select.__bindNext.call(this, $elem);
+
+    this.__meta2 = {};
+    KO._addFancyMetas(this.__meta2, this.__$elem.parent().parent());
+
+    this.userChange(function() {
+        KO._trySetFancyMeta(this.__meta2, "error", false);
+    });
+}
+
+KO.bindings.tlselect.__setVal = function() {
+    KO.bindings.select.__setVal.call(this);
+    if (this.__value) {
+        this.__meta2.$container.addClass("filled");
+    } else {
+        this.__meta2.$container.removeClass("filled");
+    }
+}
+
+KO.bindings.tlselect.__setMeta = function(ref, val) {
+    if (!KO._trySetFancyMeta(this.__meta2, ref, val)) {
+        KO.bindings.select.__setMeta.call(this, ref, val);
+    }
+}
+
+KO.bindings.tlselect.__getMeta = function(ref) {
+    if (ref === "label" || ref === "visible" || ref === "$container") {
+        return this.__meta2[ref];
+    } else {
+        return KO.bindings.select.__getMeta.call(this, ref);
+    }
+}
+
+/* Fancy checkbox */
+
+KO.bindings.tlcheckbox = Object.create(KO.bindings.checkbox);
+
+KO.bindings.tlcheckbox.__bindNext = function($elem) {
+    KO.bindings.checkbox.__bindNext.call(this, $elem);
+
+    KO._addFancyMetas(this.__meta, this.__$elem.parent());
+
+    this.userChange(function() {
+        KO._trySetFancyMeta(this.__meta, "error", false);
+    });
+}
+
+KO.bindings.tlcheckbox.__setMeta = function(ref, val) {
+    if (!KO._trySetFancyMeta(this.__meta, ref, val)) {
+        KO.warn("TLCheckbox meta '" + ref + "' is not settable");
+    }
+}

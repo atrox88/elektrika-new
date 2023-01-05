@@ -1,0 +1,103 @@
+ECM.Login = KO.Model({
+    login: {
+        binding: "click",
+        userChange: function() {
+            var login = this.parent;
+            var fieldError = false;
+            var checkBlank = function(field) {
+                if (!$.trim(login.mval(field))) {
+                    login.mref(field).meta("error", "Šis lauks ir obligāts");
+                    fieldError = true;
+                }
+            };
+            checkBlank("e_mail");
+            checkBlank("password");
+            if (fieldError){
+                return false;
+            }
+
+            var loginData = login.val();
+            loginData["CSRF_Token"] = $("#CSRF_Token").val();
+            $.ajax("/__login", {
+                method: "POST",
+                data: loginData,
+                dataType: "json",
+                error: function(error) {
+                    console.error(error.responseText);
+                    alert('Radās iekšēja kļūda, lūdzu, sazinieties ar atbalsta dienestu');
+                },
+                success: function(data) {
+                    if (data.error){
+                        login.mval("error.title", data.error.title);
+                        login.mval("error.description", data.error.description);
+                        login.mval("error.comment", data.error.comment);
+                        login.mval("error.visible", true);
+                    }else{
+                        location.reload();
+                    }
+                },
+            });
+
+        },
+    },
+    e_mail: {
+        binding: "tlinput",
+    },
+    password: {
+        binding: "tlinput",
+    },
+    error: {
+	binding: ECM.Error,
+	refType: "link",
+    },
+    facebook_login: {
+        refType: "link",
+        binding: "click",
+        userChange: function() {
+            var loginData = this.parent.val();
+            loginData['r_url'] = window.location.href;
+            loginData["CSRF_Token"] = $("#CSRF_Token").val();
+            $.ajax("/__login/facebook", {
+                method: "POST",
+                data: loginData,
+                dataType: "json",
+                error: function(error) {
+                    console.error(error.responseText);
+                    alert('Radās iekšēja kļūda, lūdzu, sazinieties ar atbalsta dienestu');
+                },
+                success: function(data) {
+                    if(data.url){
+                       window.location.href = data.url;
+                    }
+                },
+            });
+        },
+    },
+    google_login: {
+	refType: "link",
+        binding: "click",
+        userChange: function() {
+            var loginData = this.parent.val();
+            loginData['r_url'] = window.location.href;
+            loginData["CSRF_Token"] = $("#CSRF_Token").val();
+            $.ajax("/__login/google", {
+                method: "POST",
+                data: loginData,
+                dataType: "json",
+                error: function(error) {
+                    console.error(error.responseText);
+                    alert('Radās iekšēja kļūda, lūdzu, sazinieties ar atbalsta dienestu');
+                },
+                success: function(data) {
+                    if(data.url){
+                        window.location.href = data.url;
+                    }
+    },
+});
+        },
+    }
+});
+
+$(function() {
+    ECM.login = ECM.Login($("#login-form"));
+});

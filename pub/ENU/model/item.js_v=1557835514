@@ -1,0 +1,9 @@
+$(function() {
+    ECM.cardItem = ECM.Item($("#item-order-block"));
+
+    ECM.cardItem.mref("inCart").change(function() {
+        if (ECM.cardItem.mval("inCart") !== this.val()) {
+            ECM.cardItem.mval("inCart", this.val());
+        }
+    });
+});

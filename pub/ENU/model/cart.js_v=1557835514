@@ -1,0 +1,368 @@
+ECM.reportCartUpdate = function(items, changeType) {
+    var products = [];
+    $.each(dataLayer, function(idx, layer) {
+	if (layer.hasOwnProperty('ecommerce')) {
+	    if (layer.ecommerce.hasOwnProperty('checkout')) {
+		$.each(layer.ecommerce.checkout.products, function(idx, product) {
+		    $.each(items, function(idx, item) {
+			if (!item.found && product.id == item.id) {
+			    products.push({
+				id: product.id,
+				name: product.name,
+				price: product.price,
+				brand: product.brand,
+				category: product.category,
+				quantity: item.qty,
+			    });
+			    item.found = true;
+			}
+		    });
+		});
+	    }
+	}
+    });
+    var evtName = ( changeType == 'add' ? 'addToCart' : 'removeFromCart' );
+    var newLayer = { event: evtName, ecommerce: {} };
+    newLayer.ecommerce[changeType] = {
+	products: products
+    }
+    dataLayer.push(newLayer);
+}
+
+ECM.recalcCartDelayed = function(reload = false) {
+    ECM.ajaxRequestID += 1;
+    (function (requestID) {
+        ECM.cart.mval("promoCode_error", false);
+        ECM.cart.mval("error.visible", false);
+        setTimeout(function() {
+            if (requestID === ECM.ajaxRequestID) {
+                var cartData = ECM.cart.val();
+                cartData["CSRF_Token"] = $("#CSRF_Token").val();
+                cartData["ajax_id"] = requestID;
+                cartData["ajax_key"] = ECM.ajaxRequestKey;
+                $.ajax("/__update-cart", {
+                    method: "POST",
+                    data: cartData,
+                    dataType: "json",
+                    error: function(error) {
+                        console.error(error.responseText);
+                        alert('An internal error has occurred, please contact support');
+                    },
+                    success: function(data) {
+                        if (data.force_reload) {
+                            location.reload();
+                            return;
+                        }
+
+                        if (parseInt(data.request_id) === ECM.ajaxRequestID) {
+                            $.each(data.lines, function(idx, line) {
+                                ECM.cart.mval("items." + idx + ".unitPrice", line.unitPrice);
+                                ECM.cart.mval("items." + idx + ".lineAmount", line.lineAmount);
+                            });
+
+                            ECM.cart.mval("Amount", data.Amount);
+                            ECM.cart.mval("VAT", data.VAT);
+                            ECM.cart.mval("totalAmount", data.totalAmount);
+                            ECM.cart.mval("discountAmount", data.discountAmount);
+                            if(data.hideShippingAmount){
+                                ECM.cart.mval("shipping_amount_visible", false);
+                                ECM.cart.mval("shippingAmount", 0);
+                            }else{
+                                ECM.cart.mval("shipping_amount_visible", true);
+                                ECM.cart.mval("shippingAmount", data.shippingAmount);
+                            }
+
+                            if (data.lines.length) {
+                                ECM.cart.mval("empty_cart_msg_visible", false);
+                                ECM.cart.mval("cart_totals_visible", true);
+                                ECM.cart.mval("checkout_btn_visible", true);
+                                ECM.miniCart.mval("numItems", data.lines.length);
+                                ECM.miniCart.mval("amount", data.totalAmount);
+                            } else {
+                                ECM.cart.mval("empty_cart_msg_visible", true);
+                                ECM.cart.mval("cart_totals_visible", false);
+                                ECM.cart.mval("checkout_btn_visible", false);
+                                ECM.miniCart.mval("numItems", 0);
+                                ECM.miniCart.mval("amount", 0);
+                            }
+
+                            if (data.promo_error){
+				alert(data.promo_error.title);
+				ECM.cart.mval("promoDetails_visible", false);
+                                ECM.cart.mval("error.title", data.promo_error.title);
+                                ECM.cart.mval("error.description", data.promo_error.description);
+                                ECM.cart.mval("error.comment", data.promo_error.comment);
+                                ECM.cart.mval("error.visible", true);
+                                ECM.cart.mval("promoCode_error", true);
+                            } else {
+				ECM.cart.mval("activePromoCode", data.activePromoCode);
+				ECM.cart.mval("promoDetails_visible", data.activePromoCode);
+                                ECM.cart.mval("promoCode", '');
+                                ECM.cart.mval("promoCode_error", false);
+                                ECM.cart.mval("error.visible", false);
+                                if(data.added_promo){
+                                    ECM.cart.mref('promos').add({
+                                        code: data.added_promo,
+                                        title: data.added_promo,
+                                        remove: ""
+                                    }, $('.template .template-promo'));
+                                }
+                            }
+
+                            if (data.unused_discount) {
+                                ECM.cart.mval("unused_disc_msg_visible", true);
+                            }else{
+                                ECM.cart.mval("unused_disc_msg_visible", false);
+                            }
+
+			    var addedItems = [];
+			    var removedItems = [];
+			    $.each(ECM.confirmedCart.items, function(idx, item) {
+				var foundLine = false;
+				$.each(data.lines, function(idx, line) {
+				    if (line.id == item.id) {
+					foundLine = true;
+					if (line.quantity < item.quantity) {
+					    removedItems.push({
+						id: line.id,
+						qty: item.quantity - line.quantity,
+					    });
+					} else if (line.quantity > item.quantity) {
+					    addedItems.push({
+						id: line.id,
+						qty: line.quantity - item.quantity,
+					    });
+					}
+				    }
+				});
+				if (!foundLine) {
+				    removedItems.push({
+					id: item.id,
+					qty: item.quantity
+				    });
+				}
+			    });
+			    ECM.confirmedCart = ECM.cart.val();
+
+			    if (addedItems.length > 0) {
+				ECM.reportCartUpdate(addedItems, 'add');
+			    }
+			    if (removedItems.length > 0) {
+				ECM.reportCartUpdate(removedItems, 'remove');
+			    }
+                        }
+			if (reload) {
+			    window.location.reload(true);
+			}
+                    },
+                });
+            }
+        }, 100);
+    })(ECM.ajaxRequestID);
+}
+
+ECM.CartItem = KO.Model({
+    id: {
+        binding: "attr[data-id]",
+        refType: "top",
+    },
+    unitPrice: {
+        binding: "text",
+        refType: "link",
+    },
+    quantity: {
+        binding: "value",
+        type: "integer",
+        change: function() {
+            ECM.recalcCartDelayed();
+        }
+    },
+    lineAmount: {
+        binding: "text",
+        type: "decimal[2,2]",
+        refType: "link",
+    },
+    inc: {
+        binding: "click",
+        userChange: function() {
+            var item = this.parent;
+            var qty = item.mval("quantity");
+            if (qty) {
+                item.mval("quantity", qty+1);
+            }
+        },
+    },
+    dec: {
+        binding: "click",
+        userChange: function() {
+            var item = this.parent;
+            var qty = item.mval("quantity");
+            if (qty && qty > 1) {
+                item.mval("quantity", qty-1);
+            }
+        },
+    },
+    remove: {
+        binding: "click",
+        userChange: function() {
+            if (confirm('Do you really want to delete this item from the shopping cart?')) {
+                var item = this.parent;
+                item.parent.remove(item);
+                ECM.recalcCartDelayed();
+            }
+        },
+    },
+});
+
+ECM.CartPromo = KO.Model({
+    code: {
+        binding: "attr[data-id]",
+        refType: "top",
+    },
+    title: {
+        binding: "text",
+        refType: "selector",
+        refName: ".title",
+    },
+    remove: {
+        binding: "click",
+        userChange: function() {
+            ECM.cart.mval("promoCode", '');
+
+            var promo = this.parent;
+            promo.parent.remove(promo);
+            ECM.recalcCartDelayed();
+        },
+    },
+});
+
+ECM.Cart = KO.Model({
+    items: {
+        binding: "collection",
+        model: ECM.CartItem,
+        refType: "link",
+    },
+    discountAmount: {
+        binding: "text",
+        type: "decimal[2,2]",
+        refType: "link",
+        change: function(){
+            this.parent.mval("discount_amount_visible", (this.val() != 0));
+        }
+    },
+    discount_amount_visible: {
+        binding: "class[hidden]",
+        type: "negated",
+        refType: "link",
+    },
+    shippingAmount: {
+        binding: "text",
+        type: "decimal[2,2]",
+        refType: "link",
+    },
+    shipping_amount_visible: {
+        binding: "class[hidden]",
+        type: "negated",
+        refType: "link",
+    },
+    VAT: {
+        binding: "text",
+        type: "decimal[2,2]",
+        refType: "link",
+    },
+    Amount: {
+        binding: "text",
+        type: "decimal[2,2]",
+        refType: "link",
+    },
+    totalAmount: {
+        binding: "text",
+        type: "decimal[2,2]",
+        refType: "link",
+    },
+    promoCode: {
+        binding: "value",
+    },
+    promoCode_error: {
+        binding: "class[error]",
+        refName: "promoCode",
+    },
+    addPromoCode: {
+        binding: "click",
+        refType: "link",
+        userChange: function(){
+            var cart = this.parent;
+            cart.mval("promoCode", $.trim(cart.mval("promoCode")));
+            if(cart.mval("promoCode") != ''){
+                ECM.recalcCartDelayed(true);
+            }
+        }
+    },
+    promoDetails_visible: {
+	binding: "class[hidden]",
+	refType: "link",
+	refName: "promoDetails",
+	type: "negated",
+    },
+    activePromoCode: {
+	binding: "text",
+	refType: "link",
+    },
+    error: {
+        binding: ECM.Error,
+        refType: "link",
+    },
+    promos: {
+        binding: "collection",
+        model: ECM.CartPromo,
+        refType: "link",
+    },
+    unused_disc_msg_visible: {
+        binding: "class[hidden]",
+        type: "negated",
+        refType: "link",
+    },
+    empty_cart_msg_visible: {
+        binding: "class[hidden]",
+        type: "negated",
+        refType: "link",
+    },
+    cart_totals_visible: {
+        binding: "class[hidden]",
+        type: "negated",
+        refType: "link",
+    },
+    checkout_btn_visible: {
+        binding: "class[hidden]",
+        type: "negated",
+        refType: "link",
+    },
+});
+
+ECM.bindCartRelatedItems = function() {
+    ECM.items = KO.Binding("collection");
+    ECM.items.__setModel(ECM.Item);
+    ECM.items.bind($(".js-related-items"));
+    ECM.items.userChange(function() {
+        // Reload after added to cart
+        window.setTimeout(function() {
+            window.location.reload();
+        }, 300);
+    });
+};
+
+$(function() {
+    ECM.ajaxRequestID = 0;
+    ECM.ajaxRequestKey = Math.random().toString(36).slice(2);
+    ECM.cart = ECM.Cart($("#cart"));
+    ECM.confirmedCart = ECM.cart.val();
+
+    ECM.bindCartRelatedItems();
+
+    $(".js-clear-cart").click(function() {
+        $.each(ECM.cart.mref("items").lineArr(), function(idx, item) {
+            item.parent.remove(item);
+        });
+        ECM.recalcCartDelayed();
+    });
+});

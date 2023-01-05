@@ -1,0 +1,162 @@
+ECM.applyingFilters = false;
+ECM.queuedFilter = null;
+
+
+ECM.Feature = KO.Model();
+
+ECM.Filter = KO.Model({
+    id: {
+        binding: "attr[data-filter-id]",
+        refType: "top",
+    },
+    filter: {
+        binding: "select",
+        refType: "link",
+        refName: "select_value",
+    },
+    
+});
+
+ECM.Filters = KO.Model({
+    filters: {
+        binding: "collection",
+        refType: "top",
+        model: ECM.Filter,
+    },
+});
+
+ECM.getSelectedFilters = function() {
+    var filters = {};
+    $.each(ECM.filters.mref("filters").lineArr(), function(idx, filter) {
+        var values = {};
+        if (filter.mval("filter")) {
+            filters[filter.mval("id")] = filter.mval("filter");
+        }
+    });
+    return filters;
+}
+
+ECM.updateSelectedFilters = function(filterData) {
+    $.each(ECM.filters.mref("filters").lineArr(), function(idx, filter) {
+        if (filterData[filter.mval("id")]) {
+            filter.mval("filter", filterData[filter.mval("id")]);
+        }
+    });
+}
+
+ECM.applyFilters = function(clearSliders) {
+    var shortfilters = [];
+    var filters = [];
+    
+    $.each(ECM.filters.mref("filters").lineArr(), function(idx, filter) {        
+        if (filter.mval("filter")) {     
+            var url = escapingDot('#filter-'+filter.mval("id")+'-'+filter.mval("filter")); 
+            var option = $(filter.__$elem).find(url);            
+            if(option.attr("data-link")!='') {
+                shortfilters.push(option.attr("data-link"));
+            } else {
+                filters.push(filter.mval("id") + "=" + filter.mval("filter"));
+            } 
+        }
+    });     
+    
+    var newURL;    
+    newURL = BASE_URL + "/" + shortfilters.join("_");  
+    
+    var lastChar = newURL[newURL.length - 1];
+    if(lastChar == '/') {
+        newURL = newURL.substring(0, newURL.length - 1);
+    }
+    
+    if(SORT_ARGS.length>0) {
+        if (newURL.indexOf("?") > -1) {
+            newURL = newURL + "&" + SORT_ARGS;
+        } else {
+            newURL = newURL + "?" + SORT_ARGS;
+        }
+    } 
+    if(filters.length>0) {
+        if (newURL.indexOf("?") > -1) {
+            newURL = newURL + "&" + filters.join("&");
+        } else {
+            newURL = newURL + "?" + filters.join("&");
+        }
+    }
+    
+    if (history.pushState && B2BAJAX) {
+	if (ECM.applyingFilters) {
+	    ECM.queuedFilter = newURL;
+	} else {
+	    ECM.applyingFilters = true;
+            B2BAJAX.load_contents(newURL, false);
+	}
+    } else {
+	document.location = newURL;
+    }
+}
+
+$(function() {
+    var initFilters = function() {
+        ECM.filters = ECM.Filters();
+        ECM.filters.bind($("#filter-box"));
+        ECM.filters.userChange(ECM.applyFilters);
+    }
+    initFilters();
+
+
+    if (history.pushState && B2BAJAX) {
+        B2BAJAX.on_ajax(function(response) {
+            if (response.data && response.data.BASE_URL) {
+                //BASE_URL = response.data.BASE_URL;
+            }
+	    if (ECM.queuedFilter) {
+		B2BAJAX.load_contents(ECM.queuedFilter, false);
+		ECM.queuedFilter = null;
+	    } else {
+		ECM.applyingFilters = false;
+	    }
+        });
+	B2BAJAX.on_ajax_loaded(function() {
+            initFilters();
+	    if (ECM.applyingFilters) {
+		$('.ajax-overlay').show();
+	    }
+	});
+        B2BAJAX.on_pop(function(event) {
+            initFilters();
+            $('.selectpicker').selectpicker('show');
+        });
+    }
+});
+
+function getParameterByName(url, parameter) {
+    if (!url) url = window.location.href;
+    parameter = parameter.replace(/[\[\]]/g, "\\$&");
+    var regex = new RegExp("[?&]" + parameter + "(=([^&#]*)|&|#|$)"),
+        results = regex.exec(url);
+    if (!results) return null;
+    if (!results[2]) return '';
+    return decodeURIComponent(results[2].replace(/\+/g, " "));
+}
+
+function removeParameterByName(url, parameter) {
+    var urlparts= url.split('?');
+    if (urlparts.length>=2) {
+        var prefix= encodeURIComponent(parameter)+'=';
+        var pars= urlparts[1].split(/[&;]/g);
+
+        for (var i= pars.length; i-- > 0;) {
+            if (pars[i].lastIndexOf(prefix, 0) !== -1) {
+                pars.splice(i, 1);
+            }
+        }
+        url= urlparts[0]+'?'+pars.join('&');
+        return url;
+    } else {
+        return url;
+    }
+}
+
+function escapingDot(str) {
+    return str.split('.').join('\\.');
+}

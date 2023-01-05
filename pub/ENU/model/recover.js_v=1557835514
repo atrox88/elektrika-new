@@ -1,0 +1,18 @@
+ECM.Recover = KO.Model({
+    e_mail: {
+        binding: "tlinput",
+    },
+    password: {
+        binding: "tlinput",
+    },
+    password_repeated: {
+        binding: "tlinput",
+    },
+
+});
+
+$(function() {
+    $('input').attr('autocomplete', 'off');
+    ECM.recover = ECM.Recover($("#recover-form"));
+
+});

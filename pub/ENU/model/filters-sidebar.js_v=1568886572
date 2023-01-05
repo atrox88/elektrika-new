@@ -1,0 +1,351 @@
+ECM.applyingSelectedFilters = false;
+ECM.queuedSelectedFilter = null;
+
+ECM.IEEnterFix = function() {
+    var self = this;
+    this.__$elem.keypress(function (e) {
+        if (e.which === 13) {
+            self.__userSetVal($(this).val());
+        }
+    });
+}
+
+ECM.SidebarFilterValue = KO.Model({
+    id: {
+        binding: "value",
+        refType: "selector",
+        refName: "input",
+    },
+    selected: {
+        binding: "checkbox",
+        refType: "selector",
+        refName: "input",        
+    },
+    itemCount: {
+        binding: "text",
+        type: "integer",
+        refName: "item-count",
+    },
+});
+
+ECM.SidebarFilter = KO.Model({
+    id: {
+        binding: "attr[data-filter-id]",
+        refType: "top",
+    },
+    values: {
+        binding: "collection",
+        refType: "link",
+        refName: "filters",
+        model: ECM.SidebarFilterValue,
+    },
+    min: {
+        binding: "value",
+        type: "decimal[0,2,allow-negative]",
+        refType: "link",
+        refName: "min",
+        onBind: ECM.IEEnterFix,
+    },
+    max: {
+        binding: "value",
+        type: "decimal[0,2,allow-negative]",
+        refType: "link",
+        refName: "max",
+        onBind: ECM.IEEnterFix,
+    },
+    range: {
+        binding: "slider",
+        refType: "link",
+        refName: "range",
+        onBind: function() {
+            var model = this.parent;
+            this.slide(function(currVal) {
+                model.mval("min", parseFloat(currVal[0]));
+                model.mval("max", parseFloat(currVal[1]));
+            });
+            if (model.mval("id") == "price") {
+                this.meta("step", 0.01);
+            }
+        },
+    }
+});
+
+ECM.SidebarFilters = KO.Model({
+    filters: {
+        binding: "collection",
+        refType: "top",
+        model: ECM.SidebarFilter,
+    },
+});
+
+ECM.updateSidebarFilterCounts = function(filterData) {
+    $.each(ECM.Sidebarfilters.mref("filters").lineArr(), function(idx, filter) {
+        var filterVals = filterData[filter.mval("id")];
+        if (filterVals) {
+            if (filter.mref("range").__$elem) {
+                var range = filter.mref("range");
+                range.val([filterVals["min_set"], filterVals["max_set"]]);
+                filter.mval("min", filterVals["min_set"]);
+                filter.mval("max", filterVals["max_set"]);
+                range.meta("limit-min", filterVals["min_filtered"]);
+                range.meta("limit-max", filterVals["max_filtered"]);
+                if (filterVals["min_filtered"] == filterVals["max_filtered"]) {
+                    range.meta("disabled", true);
+                    filter.mref("min").__$elem.prop("disabled", true);
+                    filter.mref("max").__$elem.prop("disabled", true);
+                } else {
+                    range.meta("disabled", false);
+                    filter.mref("min").__$elem.prop("disabled", false);
+                    filter.mref("max").__$elem.prop("disabled", false);
+                }
+            } else {
+                $.each(filter.mref("values").lineArr(), function(idx, val) {
+                    if (filterVals[val.mval("id")] !== undefined) {
+                        val.mval("itemCount", filterVals[val.mval("id")]);
+                        if (val.mval("itemCount") === 0) {
+                            val.mref("id").__$elem.prop("disabled", true);
+                            val.mref("id").__$elem.parent().find('.filterurl').addClass("disabled_option");
+                        } else {
+                            val.mref("id").__$elem.prop("disabled", false);                            
+                            val.mref("id").__$elem.parent().find('.filterurl').removeClass("disabled_option");
+                        }
+                    }
+                });
+            }
+        }
+    });
+}
+
+ECM.getSelectedSidebarFilters = function() {
+    var filters = {};
+    $.each(ECM.Sidebarfilters.mref("filters").lineArr(), function(idx, filter) {
+        if (filter.mref("range").__$elem) {
+            var range = filter.mref("range");
+            var values = {};
+            values["min_set"] = filter.mval("min");
+            values["max_set"] = filter.mval("max");
+            values["min_filtered"] = range.meta("limit-min");
+            values["max_filtered"] = range.meta("limit-max");
+            filters[filter.mval("id")] = values;
+        } else {
+            var values = {};
+            $.each(filter.mref("values").lineArr(), function(idx, val) {
+                if (val.mval("selected")) {
+                    values[val.mval("id")] = true;
+                }
+            });
+            if (Object.keys(values).length > 0) {
+                filters[filter.mval("id")] = values;
+            }
+        }
+    });
+    return filters;
+}
+
+ECM.updateSelectedSidebarFilters = function(filterData) {
+    $.each(ECM.Sidebarfilters.mref("filters").lineArr(), function(idx, filter) {
+        $.each(filter.mref("values").lineArr(), function(idx, val) {
+            if (filterData[filter.mval("id")] && filterData[filter.mval("id")][val.mval("id")]) {
+                val.mval("selected", true);
+            } else {
+                val.mval("selected", 0);
+            }
+        });
+    });
+}
+
+ECM.applySelectedFilters = function(clearSliders) {
+    var filters = [];
+    var shortfilters = [];
+    $.each(ECM.Sidebarfilters.mref("filters").lineArr(), function(idx, filter) {
+        if (filter.mref("range").__$elem && !clearSliders) {
+            var range = filter.mref("range");
+            var filtStr = "";
+            var filtSet = false;
+            if (filter.mval("min") > range.meta("limit-min") &&
+                filter.mval("min") <= range.meta("limit-max") &&
+                filter.mval("min") <= filter.mval("max"))
+            {
+                filtStr = filter.mval("min");
+                filtSet = true;
+            } else {
+                filtStr = range.meta("limit-min");
+            }
+            if (filter.mval("max") < range.meta("limit-max") &&
+                filter.mval("max") >= range.meta("limit-min") &&
+                filter.mval("max") >= filter.mval("min"))
+            {
+                filtStr = filtStr + ".." + filter.mval("max");
+                filtSet = true;
+            } else {
+                filtStr = filtStr + ".." + range.meta("limit-max");
+            }
+            if (filtSet) {
+                filters.push("from_" + filter.mval("id") + "=" + filtStr);
+            }
+        } else {
+            var values = [];
+            var fid = '';
+            $.each(filter.mref("values").lineArr(), function(idx, val) {
+                if (val.mval("selected")) {
+                    if(val.__$elem.find('input').attr("data-link")!='') {
+                        shortfilters.push(val.__$elem.find('input').attr("data-link"));
+                    } else {
+                        values.push(val.mval("id"));
+                        fid = val.__$elem.find('input').attr("name");
+                    }                    
+                }
+            });
+            if (values.length > 0) {
+                filters.push(fid + "=" + values.join("+"));
+            }
+        }
+    });
+    var newURL;    
+    newURL = BASE_URL + "/" + shortfilters.join("_");  
+    
+    var lastChar = newURL[newURL.length - 1];
+    if(lastChar == '/') {
+        newURL = newURL.substring(0, newURL.length - 1);
+    }
+    
+    if(SORT_ARGS.length>0) {
+        if (newURL.indexOf("?") > -1) {
+            newURL = newURL + "&" + SORT_ARGS;
+        } else {
+            newURL = newURL + "?" + SORT_ARGS;
+        }
+    } 
+    if(filters.length>0) {
+        if (newURL.indexOf("?") > -1) {
+            newURL = newURL + "&" + filters.join("&");
+        } else {
+            newURL = newURL + "?" + filters.join("&");
+        }
+    }
+    
+    if (history.pushState && B2BAJAX) {
+	if (ECM.applyingSelectedFilters) {
+	    ECM.queuedSelectedFilter = newURL;
+	} else {
+	    ECM.applyingSelectedFilters = true;
+        B2BAJAX.load_contents(newURL, false);
+
+        if ($(window).width() <= 640) { // Run this only for mobile devices
+            var newSortURL = newURL;
+            if (getParameterByName(newSortURL, 'sort') != null) {
+                newSortURL = removeParameterByName(newSortURL, 'sort');
+            }
+            var sign = (newSortURL.split('?')[1] != '' ? '&' : '');
+
+            $('#sorting-box > a').each(function () {
+                if (getParameterByName($(this).attr('href'), 'sort') != null) {
+                    var attachSort = sign + 'sort=' + getParameterByName($(this).attr('href'), 'sort');
+                }
+                else {
+                    var attachSort = '';
+                }
+                $(this).attr('href', newSortURL + attachSort);
+            });
+        }
+	}
+    } else {
+	document.location = newURL;
+    }
+}
+
+$(function() {
+    
+    ECM.Sidebarfilters = ECM.SidebarFilters();
+    
+    ECM.Sidebarfilters.bind($("#filter-box-sidebar"));
+
+    ECM.Sidebarfilters.userChange(ECM.applySelectedFilters);
+
+    $(".js-clear-filters").click(function() {
+        ECM.updateSelectedSidebarFilters({}); // reset filters
+        ECM.applySelectedFilters(true);
+    });
+
+    $('.js-show-values').click(function(e) {
+        e.preventDefault();
+        $(this).closest('.filter').find('.minimized').addClass('minimized-off');
+        $(this).closest('.filter').find('.js-hide-values').removeClass('hidden');
+        $(this).addClass('hidden');
+    });
+    $('.js-hide-values').click(function(e) {
+        e.preventDefault();
+        $(this).closest('.filter').find('.minimized').removeClass('minimized-off');
+        $(this).closest('.filter').find('.js-show-values').removeClass('hidden');
+        $(this).addClass('hidden');
+    });
+    
+    $(document).on("click",".filterurl",function(){ 
+        checkbox = $(this).parent().find("input");
+        value = checkbox.val();
+        if(checkbox.prop('checked')) {
+            checkbox.prop('checked', false);
+        } else {
+            checkbox.prop('checked', true);
+        }  
+        checkbox.val(value).change(); 
+        return false;
+    });
+
+
+    if (history.pushState && B2BAJAX) {
+        B2BAJAX.on_ajax(function(response) {
+            var toStore = {};
+            if (response.data && response.data.filters) {
+                ECM.updateSidebarFilterCounts(response.data.filters);
+                toStore.filterCounts = response.data.filters;
+                toStore.selectedFilters = ECM.getSelectedSidebarFilters();
+            }
+            if (response.data && response.data.BASE_URL) {
+                //BASE_URL = response.data.BASE_URL;
+            }
+	    if (ECM.queuedSelectedFilter) {
+		B2BAJAX.load_contents(ECM.queuedSelectedFilter, false);
+		ECM.queuedSelectedFilter = null;
+	    } else {
+		ECM.applyingSelectedFilters = false;
+	    }
+            return toStore;
+        });
+	B2BAJAX.on_ajax_loaded(function() {
+	    if (ECM.applyingSelectedFilters) {
+		$('.ajax-overlay').show();
+	    }
+	});
+        B2BAJAX.on_pop(function(event) {
+	    if (ECM.applyingSelectedFilters) {
+		ECM.applyingSelectedFilters = false;
+		ECM.queuedSelectedFilter = null;
+	    }
+            if (event.state.filterCounts) {
+                ECM.updateSidebarFilterCounts(event.state.filterCounts);
+                ECM.updateSelectedSidebarFilters(event.state.selectedFilters);
+            }
+        });
+    }
+
+    $('.show-more__trigger').on('click', function() {
+        var filter_id = $(this).closest('div[data-filter-id]').data('filter-id');
+
+        $.each((ECM.Sidebarfilters.mref("filters").lineArr()), function(idx, filter) {
+            if (filter.mval('id') === filter_id){
+                $arr = filter.mref("values").lineArr();
+
+                $arr.sort(function(a, b) {
+                    var textA = a.mref('id').__$elem.attr("data-name");
+                    var textB = b.mref('id').__$elem.attr("data-name");
+                    return (textA < textB) ? -1 : (textA > textB) ? 1 : 0;
+                });
+
+                for (var i = 0; i < $arr.length; i++) {
+                    $arr[i].__$elem.parent().append($arr[i].__$elem);
+                }
+            }
+        });
+    });
+});

@@ -1,0 +1,410 @@
+var ECM = {};
+
+ECM.focusAreas = [];
+ECM.activatedModals = {};
+ECM.addActivation = function($elements) {
+    $elements.find(".js-activated").each(function() {
+        var $container = $(this);
+        var $trigger = $($container.children()[0]);
+        var modalAreaID = $container.attr("data-activated-id");
+        var activatedArea = null;
+        if (modalAreaID) {
+            activatedArea = $(document.getElementById(modalAreaID));
+        }
+        switch ($container.attr("data-activation")) {
+        case "hover":
+            $container.mouseenter(function (ev) {
+                $container.addClass("active");
+                if (activatedArea) {
+                    activatedArea.addClass("active");
+                }
+            });
+            $container.mouseleave(function (ev) {
+                $container.removeClass("active");
+                if (activatedArea) {
+                    activatedArea.removeClass("active");
+                }
+            });
+            break;
+        case "hover-to-click": // Hover effect changed to Click for mobile devices
+            if ($(window).width() >= 960){
+                $container.mouseenter(function (ev) {
+                    $container.addClass("active");
+                    if (activatedArea) {
+                        activatedArea.addClass("active");
+                    }
+                });
+                $container.mouseleave(function (ev) {
+                    $container.removeClass("active");
+                    if (activatedArea) {
+                        activatedArea.removeClass("active");
+                    }
+                });
+            }
+            else {
+                $container.click(function () {
+                    if (activatedArea) {
+                        activatedArea.removeClass("active");
+                    }
+                    if (activatedArea) {
+                        activatedArea.addClass("active");
+                    }
+                });
+            }
+            break;
+        case "focus":
+            ECM.focusAreas.push($container);
+
+            $trigger.click(function() {
+                if ($container.hasClass("active")) {
+                    $container.removeClass("active");
+                    if (activatedArea) {
+                        activatedArea.removeClass("active");
+                    }
+                } else {
+                    $container.addClass("active");
+                    if (activatedArea) {
+                        activatedArea.addClass("active");
+                    }
+                }
+            });
+            break;
+        case "modal":
+            var modalName = $container.attr("data-modal-name");
+            if (modalName) {
+                if (!ECM.activatedModals.hasOwnProperty(modalName)) {
+                    ECM.activatedModals[modalName] = {
+                        options: []
+                    };
+                }
+                var modal = ECM.activatedModals[modalName];
+
+                modal.options.push({
+                    $trigger: $container,
+                    $activatedArea: activatedArea
+                });
+
+                $container.click(function(ev) {
+                    $.each(modal.options, function(idx, option) {
+                        if (option.$trigger[0] === ev.target || $(option.$trigger[0]).has(ev.target).length > 0) {
+                            option.$trigger.addClass("active");
+                            if (option.$activatedArea) {
+                                option.$activatedArea.addClass("active");
+                            }
+                        } else {
+                            option.$trigger.removeClass("active");
+                            if (option.$activatedArea) {
+                                option.$activatedArea.removeClass("active");
+                            }
+                        }
+                    });
+                });
+            }
+            break;
+        case "toggle":
+        default:
+            $trigger.click(function() {
+                if ($container.hasClass("active")) {
+                    $container.removeClass("active");
+                    if (activatedArea) {
+                        activatedArea.removeClass("active");
+		            }
+                } else {
+                    $container.addClass("active");
+		            if (activatedArea) {
+			            activatedArea.addClass("active");
+		            }
+                }
+            });
+            break;
+        }
+    });
+}
+
+ECM.addFancyLabels = function($elements) {
+    $elements.find(".fancy-input").each(function() {
+        var $group = $(this);
+        var $input = $group.find("input");
+	var $label = $group.find("label");
+
+        if ($input.is(":focus") || $input.val().length > 0) {
+            $group.addClass("filled");
+        } else {
+            $group.removeClass("filled");
+        }
+
+	$label.click(function() {
+	    $group.addClass("filled");
+	    $input.focus();
+	});
+        $input.focus(function() {
+            $group.addClass("filled");
+        });
+        $input.blur(function() {
+            if ($input.val().length === 0) {
+                $group.removeClass("filled");
+            }
+        });
+
+        if ($group.is(".js-check-autofill")) {
+            var timeoutID = setTimeout(function(ev) {
+                if ($input.val().length !== 0) {
+                    $group.addClass("filled");
+                    clearTimeout(timeoutID);
+                }
+            }, 200);
+        }
+    });
+
+    $elements.find(".fancy-select").each(function() {
+        var $group = $(this);
+        var $select = $group.find("select");
+        var $label = $group.find("label");
+
+        var check_filled = function() {
+            var $option = $select.find("option:selected");
+            if (!$option || $option.text() === '') {
+                $group.removeClass("filled");
+            } else {
+                $group.addClass("filled");
+            }
+        }
+
+        check_filled();
+
+        $select.change(function() {
+            check_filled();
+        });
+        $select.keyup(function() {
+            check_filled();
+        });
+        $select.keydown(function() {
+            $group.addClass("filled");
+        });
+    });
+}
+
+ECM.Error = KO.Model({
+    visible: {
+	binding: "class[hidden]",
+	type: "negated",
+	refType: "top",
+	change: function() {
+	    var model = this.parent;
+	    if (!this.val()) {
+		model.mval("title", "");
+		model.mval("description", "");
+		model.mval("comment", "");
+	    }
+	}
+    },
+    title: {
+	binding: "text",
+	refType: "selector",
+	refName: ".title",
+    },
+    description: {
+	binding: "text",
+	refType: "selector",
+	refName: ".description",
+    },
+    comment: {
+	binding: "text",
+	refType: "selector",
+	refName: ".comment",
+    },
+});
+
+ECM.Success = KO.Model({
+    visible: {
+        binding: "class[hidden]",
+        type: "negated",
+        refType: "top",
+        change: function() {
+            var model = this.parent;
+            if (!this.val()) {
+                model.mval("title", "");
+                model.mval("description", "");
+                model.mval("comment", "");
+            }
+        }
+    },
+    title: {
+        binding: "text",
+        refType: "selector",
+        refName: ".title",
+    },
+    description: {
+        binding: "text",
+        refType: "selector",
+        refName: ".description",
+    },
+    comment: {
+        binding: "text",
+        refType: "selector",
+        refName: ".comment",
+    },
+});
+
+ECM.MiniCart = KO.Model({
+    click: {
+        binding: "click",
+        refType: "top",
+        userChange: function() {
+            var cart = this.parent;
+            if (cart.mval("empty")) {
+                cart.mval("active", true);
+                cart.__$elem.parent().mouseleave(function() {
+                    cart.__$elem.parent().off("mouseleave");
+                    cart.mval("active", false);
+                });
+
+            } else {
+                window.location = "/cart";
+            }
+        },
+    },
+    empty: {
+        binding: "class[not-empty]",
+        type: "negated",
+        refType: "top",
+    },
+    active: {
+        binding: "class[active]",
+        refType: "top",
+        change: function() {
+            if (this.val()) {
+                $('#header-cart-popup').removeClass('hidden');
+            } else {
+                $('#header-cart-popup').addClass('hidden');
+
+            }
+        }
+    },
+    numItems: {
+        binding: "text",
+        refType: "link",
+        change: function() {
+            var cart = this.parent;
+            cart.mval("empty", this.val() === 0);
+
+            // fn from comman.js
+            Bounce(cart.mref("numItems").__$elem, 2, '5px', 100);
+        }
+    },
+    amount: {
+        binding: "text",
+        type: "decimal[2,2]",
+        refType: "link",
+        change: function() {
+            var cart = this.parent;
+            cart.mval("euroVisible", this.val() < 100000);
+        }
+    },
+    euroVisible: {
+        binding: "class[hidden]",
+        type: "negated",
+        refType: "link",
+        refName: "euro",
+    },
+});
+
+$(function() {
+    KO.debug = false;
+
+    ECM.addActivation($("body"));
+
+    B2BAJAX.on_ajax_loaded(function() {
+        ECM.addActivation($(".js-ajax-contents"));
+    });
+    B2BAJAX.on_pop(function() {
+        ECM.addActivation($(".js-ajax-contents"));
+    });
+
+    ECM.miniCart = ECM.MiniCart($("#header-cart-button"));
+
+    $('.js-show-all-text').click(function() {
+        $(this).closest('.sidebar-long-text').addClass('expanded');
+    });
+    $('#main-content-sidebar .js-hide-all-text, #main-content-area .js-hide-all-text').click(function() {
+        $(this).closest('.sidebar-long-text').removeClass('expanded');
+    });
+
+    function initScrollUp() {
+        var scrollUp = $('<a>', { id: 'back-to-top', href: '#top' });
+        var icon = $('<i>', { class: 'fa fa-chevron-up' });
+
+        scrollUp.appendTo ('body');
+        icon.appendTo (scrollUp);
+
+        scrollUp.hide();
+
+        $(window).scroll(function () {
+            if ($(this).scrollTop() > 150) {
+                if($(window).scrollTop() + $(window).height() > $(document).height() - 352){
+                    scrollUp.addClass('stay');
+                }else{
+                    scrollUp.removeClass('stay');
+                    scrollUp.addClass()
+                }
+                scrollUp.fadeIn ();
+            } else {
+                scrollUp.fadeOut ();
+            }
+        });
+
+        scrollUp.click (function (e) {
+            e.preventDefault ();
+            $('body, html').animate({
+                scrollTop: 0
+            }, 600);
+        });
+    }
+    initScrollUp();
+
+    $('[data-cookie-close]').on('click', function(){
+        $.ajax("/__hide_cookies_msg", {
+            method: "POST",
+            data: {
+                CSRF_Token: $("#CSRF_Token").val(),
+            },
+            dataType: "json",
+            error: function(error) {
+                console.error(error.responseText);
+                alert('Radās iekšēja kļūda, lūdzu, sazinieties ar atbalsta dienestu');
+            },
+            success: function(data) {
+                if (data.success) {
+                    $('.cookies').hide();
+                }
+            },
+        });
+    });
+
+    // Delete CMS page
+    $('.cms-delete').on('click', function(){
+        if(confirm("DO YOU WANT TO DELETE THIS PAGE?")){
+            $.ajax($(this).attr('data-href'), {
+                method: "POST",
+                data: {
+                    CSRF_Token: $("#CSRF_Token").val(),
+                },
+                dataType: "json",
+                error: function(error) {
+                    console.error(error.responseText);
+                    alert('Radās iekšēja kļūda, lūdzu, sazinieties ar atbalsta dienestu\nERROR: ' + error.responseText.match( /"(.*?)"/ )[1]);
+                },
+                success: function(data) {
+                    if (data.success) {
+                        window.location = data.success;
+                    }
+                },
+            });
+        }
+    });
+
+    // Mobile language switch
+    $('select#mob-lang-select').on('change', function(){
+        window.location = $(this).val();
+    });
+});

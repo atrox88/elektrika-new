@@ -1,0 +1,178 @@
+ECM.findInDataLayer = function(id, listName) {
+    var copyProductData = function(product, newData) {
+	newData.name = product.name;
+	newData.price = product.price;
+	newData.brand = product.brand;
+	newData.category = product.category;
+	if (product.position) {
+	    newData.position = product.position;
+	}
+    }
+    var data = { id: id };
+    $.each(dataLayer, function(idx, layer) {
+	if (layer.hasOwnProperty('ecommerce')) {
+	    if (layer.ecommerce.hasOwnProperty('impressions')) {
+		$.each(layer.ecommerce.impressions, function(idx, impression) {
+		    if (impression.id == id && (impression.list == listName || !listName)) {
+			copyProductData(impression, data);
+			return data;
+		    }
+		});
+	    }
+	    if (layer.ecommerce.hasOwnProperty('detail')) {
+		$.each(layer.ecommerce.detail.products, function(idx, product) {
+		    if (product.id == id) {
+			copyProductData(product, data);
+			return data;
+		    }
+		});
+	    }
+	}
+    });
+    return data;
+};
+
+ECM.addToCart = function() {
+    var item = this.parent;
+    var button = item.mref("add");
+
+    // if (item.mval("inCart")) {
+    //     window.location = "/cart";
+    //     return;
+    // }
+
+    if (item.mval("quantity")) {
+        qty = item.mval("quantity");
+    } else {
+        qty = 1;
+    }
+
+    button.meta("disabled", true);
+    $.ajax("/__add-to-cart", {
+        method: "POST",
+        data: {
+            CSRF_Token: $("#CSRF_Token").val(),
+            item: item.mval("id"),
+            qty: qty,
+        },
+        dataType: "json",
+        success: function(data) {
+            button.meta("disabled", false);
+            item.mval("inCart", true);
+            ECM.miniCart.mval("numItems", data["num_items"]);
+            ECM.miniCart.mval("amount", data["total_amount"]);
+            var details = [ ECM.findInDataLayer(item.mval('id'), null) ];
+	    details[0].quantity = qty;
+	    dataLayer.push({
+		event: 'addToCart',
+		ecommerce: {
+		    add: {
+			products: details
+		    }
+		}
+	    });
+        }
+    });
+};
+
+ECM.QtyPrice = KO.Model({
+    min_qty: {
+        binding: "attr[data-min-qty]",
+        refType: "top",
+    },
+    price: {
+        binding: "attr[data-price]",
+        refType: "top",
+    },
+});
+
+ECM.Item = KO.Model({
+    id: {
+        binding: "attr[data-id]",
+        refType: "top",
+    },
+    add: {
+        binding: "click",
+        refType: "link",
+        userChange: ECM.addToCart,
+    },
+    inCart: {
+        binding: "class[added]",
+        refType: "link",
+        refName: "add",
+    },
+    quantity: {
+        binding: "value",
+        type: "integer",
+        change: function() {
+            var item = this.parent;
+            var price = item.mval("price");
+            if (this.val() && price) {
+                item.mval("amount", this.val()*price);
+            } else if (this.val() && item.mval("qty_prices")) {
+                var max_qty = 0;
+                var self = this;
+                item.mval("amount", 0);
+                $.each(item.mref("qty_prices").lineArr(), function(idx, price) {
+                    if (price.mval("min_qty") >= max_qty && price.mval("min_qty") <= self.val()) {
+                        max_qty = price.mval("min_qty");
+                        item.mval("amount", self.val() * price.mval("price"));
+                    }
+                });
+            }
+        }
+    },
+    inc: {
+        binding: "click",
+        userChange: function() {
+            var item = this.parent;
+            var qty = item.mval("quantity");
+            if (qty) {
+                item.mval("quantity", qty+1);
+            }
+        },
+    },
+    dec: {
+        binding: "click",
+        userChange: function() {
+            var item = this.parent;
+            var qty = item.mval("quantity");
+            if (qty && qty > 1) {
+                item.mval("quantity", qty-1);
+            }
+        },
+    },
+    price:{
+        binding: "text",
+        type: "decimal[2,2]",
+        refType: "link"
+    },
+    qty_prices: {
+        binding: "collection",
+        refType: "link",
+        model: ECM.QtyPrice
+    },
+    amount: {
+        binding: "text",
+        type: "decimal[2,2]",
+        refType: "link"
+    }
+});
+
+ECM.bindItems = function() {
+    ECM.items = KO.Binding("collection");
+    ECM.items.__setModel(ECM.Item);
+    ECM.items.bind($(".box__body .product-list.item-list"));
+};
+
+$(function() {
+    var initItems = function() {
+        ECM.bindItems();
+    };
+    initItems();
+
+    if (B2BAJAX) {
+        B2BAJAX.on_ajax_loaded(initItems);
+        B2BAJAX.on_pop(initItems);
+    }
+});
