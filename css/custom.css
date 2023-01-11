@@ -4517,6 +4517,107 @@ h6 {
     align-items: center;
     justify-content: center;
 }
+/* klix*/
+#modal {
+    background: #000 !important;
+}
+.widget-wrapper {
+    background:#000 !important;
+}
+/* /klix*/
+
+/*size */
+
+.product-size-right{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-bottom:20px;
+    margin-top:10px;
+}
+.product-size-right p {
+    font-weight: 400;
+    font-size: 15px;
+    color: #939393;
+    margin-bottom:19px;
+}
+
+.radio_gb input {
+    display: none;
+}
+
+
+.radio_gb label:before,
+.radio_gb label:after {
+    display:none !important;
+}
+
+
+
+.radio_gb input:checked+label, .radio_gb label:hover {
+    color: #fff !important;
+    border-color: #225F8F;
+    background:#225F8F !important;
+}
+.catalog-size {
+    margin-top:15px;
+    margin-bottom:15px;
+}
+
+.catalog-size .radio_gb input:checked+label {
+    line-height: 22px;
+    padding:0;
+    font-size:12px;
+    font-weight: 400;
+}
+
+.radio_gb input:checked+label {
+    line-height: 38px;
+    padding:0;
+    font-size:18px;
+    font-weight: 400;
+}
+
+.catalog-size .radio_gb label{
+    width: 28px;
+    height: 24px;
+    line-height: 22px !important;
+    padding:0 !important;
+    font-size:12px !important;
+    font-weight: 400 !important;
+    margin-right: 0;
+}
+
+
+.radio_gb label {
+    border: 1.5px solid #A5A5A5;
+    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
+    -webkit-border-radius: 1.5px;
+    border-radius: 1.5px;
+    width: 42px;
+    height: 38px;
+    display: inline-block;
+    text-align: center;
+    margin-bottom: 0;
+    margin-right: 5px;
+    cursor: pointer;
+    font-weight: 400;
+    color: #A5A5A5 !important;
+    -webkit-transition: all .15s;
+    -o-transition: all .15s;
+    transition: all .15s;
+
+    line-height: 38px !important;
+    padding:0 !important;
+    font-size:18px !important;
+    font-weight: 400 !important;
+}
+
+.radio_gb label:last-child {
+    margin-right:0;
+}
+/* /size*/
 
 .add-to-card-btn-wrapper-right .def-card-btn {
     margin-left: auto;
