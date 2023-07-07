@@ -112,6 +112,13 @@ a.btn-links {
     justify-content: center;
     margin-top: 12px;
 }
+.table-bottom .amt p {
+    display: flex;
+}
+
+.table-bottom .amt p span {
+    margin-left: 4px;
+}
 
 .btn-texts p {
     font-weight: bold;
