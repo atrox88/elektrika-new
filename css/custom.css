@@ -18843,7 +18843,7 @@ li.shop-categories__item:nth-child(11) .submenu-lvl2 {
 
 li.shop-categories__item:nth-child(12) .submenu-lvl2 {
     top: 0;
-    bottom: auto;
+    bottom: 0;
 }
 
 li.shop-categories__item:nth-child(13) .submenu-lvl2 {
