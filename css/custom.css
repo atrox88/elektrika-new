@@ -18820,7 +18820,8 @@ li.shop-categories__item:nth-child(6) .submenu-lvl2 {
 
 
 li.shop-categories__item:nth-child(7) .submenu-lvl2 {
-    top: 206px;
+    top: 0;
+    bottom:0;
 }
 
 li.shop-categories__item:nth-child(8) .submenu-lvl2 {
