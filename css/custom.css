@@ -18842,8 +18842,8 @@ li.shop-categories__item:nth-child(11) .submenu-lvl2 {
 }
 
 li.shop-categories__item:nth-child(12) .submenu-lvl2 {
-    top: auto;
-    bottom: 0;
+    top: 0;
+    bottom: auto;
 }
 
 li.shop-categories__item:nth-child(13) .submenu-lvl2 {
@@ -18852,8 +18852,8 @@ li.shop-categories__item:nth-child(13) .submenu-lvl2 {
 }
 
 li.shop-categories__item:nth-child(14) .submenu-lvl2 {
-    top: auto;
-    bottom: 0;
+    top: 0;
+    bottom: auto;
 }
 
 li.shop-categories__item:nth-child(15) .submenu-lvl2 {
