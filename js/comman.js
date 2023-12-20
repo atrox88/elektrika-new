@@ -19,7 +19,9 @@ window.addEventListener("scroll", function () {
   const scrollMenu = document.querySelector(".scroll-top-menu");
 
   if (scrollTop > 720) {
-    scrollMenu.classList.add("actives");
+    if(scrollMenu != null){
+        scrollMenu.classList.add("actives");
+    }
 
     var contActive = document.querySelector(".categorijas-sub-menu.actives");
 
@@ -37,7 +39,9 @@ window.addEventListener("scroll", function () {
     var contActive = document.querySelector(".categorijas-sub-menu.actives");
     const hiddenBlock = document.querySelector(".shop-categories__list");
 
-    scrollMenu.classList.remove("actives");
+    if(scrollMenu != null) {
+        scrollMenu.classList.remove("actives");
+    }
     contActive.addEventListener("mouseover", () => {
       hiddenBlock.style.display = "none";
     });
@@ -186,7 +190,7 @@ function Bounce(ele, times, distance, speed) {
 // 	}
 //
 // 	if (typeof currency === "undefined") {
-// 		currency = '€';
+// 		currency = 'â‚¬';
 // 	}
 //
 // 	if (isNaN(quantity)) {
@@ -358,20 +362,54 @@ $(document).ready(function () {
     navigation: {
       nextEl: ".swiper-button-next",
       prevEl: ".swiper-button-prev",
-    },
-    slidesPerView: $(window).width() > 1223 ? 4 : 2,
-    spaceBetween: $(window).width() > 1223 ? 0 : 8,
+    }, 
+    spaceBetween: 8,
+    slidesPerView: 2,
+    breakpoints: {
+    // when window width is <= 499px
+      499: {
+          slidesPerView: 2,
+          spaceBetweenSlides: 8
+      },
+      // when window width is <= 999px
+      850: {
+          slidesPerView: 3,
+          spaceBetweenSlides: 8
+      },
+      1250: {
+          slidesPerView: 4,
+          spaceBetweenSlides: 8
+      }
+    }
+    // slidesPerView: $(window).width() > 1223 ? 4 : 2,
+    // spaceBetween: $(window).width() > 1223 ? 0 : 8,
   });
   var swiper = new Swiper(".js-on-sale", {
     navigation: {
       nextEl: ".swiper-button-next",
-      prevEl: ".swiper-button-prev",
-      slidesPerView: 3,
-      spaceBetween: 0,
+      prevEl: ".swiper-button-prev", 
     },
-    1024: {},
-    slidesPerView: $(window).width() > 1223 ? 4 : 2,
-    spaceBetween: $(window).width() > 1223 ? 0 : 8,
+    spaceBetween: 8,
+    slidesPerView: 2,
+    breakpoints: {
+      // when window width is <= 499px
+      499: {
+          slidesPerView: 2,
+          spaceBetweenSlides: 8
+      },
+      // when window width is <= 999px
+      850: {
+          slidesPerView: 3,
+          spaceBetweenSlides: 8
+      },
+      1250: {
+          slidesPerView: 4,
+          spaceBetweenSlides: 8
+      }
+    }
+    // 1024: {},
+    // slidesPerView: $(window).width() > 1223 ? 4 : 2,
+    // spaceBetween: $(window).width() > 1223 ? 0 : 8,
   });
   var swiperProduction = new Swiper(".js-cart-related", {
     navigation: {
@@ -649,10 +687,10 @@ $(window).load(function () {
    document.getElementsByClassName('shop-categories')[0].parentNode.classList.remove('menu-opened')
    document.getElementsByClassName('menu-burger')[0].classList.remove('open')
    } */
-let lang = document.getElementsByClassName("lang")[0];
+// let lang = document.getElementsByClassName("lang")[0];
 if (screen.width < 1230) {
   let headerBottomWrapper = document.getElementsByClassName("header-categories-menu")[0];
-  headerBottomWrapper.append(lang);
+  // headerBottomWrapper.append(lang);
 }
 if (screen.width < 1223) {
   try {
@@ -943,11 +981,11 @@ function showAllMarks() {
 
   if (this.previousElementSibling.style.display == "none") {
     loop(innerWrappersPar.length, "block");
-    this.innerText = "Скрыть метки";
+    this.innerText = "ذ،ذ؛ر€ر‹ر‚رŒ ذ¼ذµر‚ذ؛ذ¸";
   } else {
     loop(innerWrappersPar.length, "none");
     loop(+amount, "block");
-    this.innerText = "Показать метки";
+    this.innerText = "ذںذ¾ذ؛ذ°ذ·ذ°ر‚رŒ ذ¼ذµر‚ذ؛ذ¸";
   }
 }
 
@@ -1477,21 +1515,21 @@ $(function () {
       autoPlaceholder: "aggressive",
       initialCountry: ECM.country_code || "lv",
       separateDialCode: true,
-      // preferredCountries: ['ru','th'],
       customPlaceholder: function (selectedCountryPlaceholder, selectedCountryData) {
         return "" + selectedCountryPlaceholder.replace(/[0-9]/g, "X");
       },
-      utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/16.0.0/js/utils.js", // just for
+      utilsScript: "https://cdn.jsdelivr.net/npm/intl-tel-input@18.2.1/build/js/utils.js",
     });
 
     input[i].iti_instance = iti;
 
-    $('input[type=tel').on("focus click countrychange", function (e, countryData) {
+    $('input[type=tel]').on("focus click countrychange", function (e, countryData) {
       var pl = $(this).attr("placeholder") + "";
       var res = pl.replace(/X/g, "9");
       if (res != "undefined") {
         $(this).inputmask(res, {
           placeholder: "X",
+          autoUnmask: true,
           clearMaskOnLostFocus: true,
         });
       }
