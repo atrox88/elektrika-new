@@ -16427,6 +16427,145 @@ section.project_development .form-group input[type="tel"] {
     }
 
 
+
+    .basket-wrapper {
+        min-width: 100px;
+    }
+    
+    .header-menu .cart-no {
+        right: 80px;
+    }
+
+}
+ 
+
+@media all and (max-width: 1200px) {
+    
+    .submenu-lvl2 {
+        /* min-height: 625px; */
+    }
+
+    .lang{
+        z-index: 10;
+    }
+
+    .basket-wrapper {
+        margin-left: 21px;
+    }
+    
+    .log-in-block {
+        margin-left: auto;
+        margin-right: 0;
+        order: 2;
+    }
+    
+    a.favorite-link {
+        margin-left: 15px;
+        margin-right: 0;
+        order: 2;
+    }
+    
+    .cookie-text p {
+        max-width: 75%;
+        margin-right: 0px;
+    }
+    .search_header {
+        margin-top: 0;
+    }
+    
+    .header-menu-wrapper form {
+        max-width: max-content;
+        min-width: 560px;
+        margin-left: 0;
+        margin-right: 25px;
+        order: 0;
+    }
+    
+    .search-label .fa {
+        top: 50%;
+    }
+    
+    .header-menu-wrapper form .search-label {
+        max-width: 100%;
+    }
+
+    .row.row__flex {
+        align-items: flex-start;
+    }
+    
+    .header-categories-block.categories {
+        width: 267px;
+    }
+
+    .home-carousel .swiper-wrapper .swiper-slide {
+        min-height: 510px;
+    }
+
+    li.shop-categories__item .submenu-lvl2 {
+        left: 270px;
+        padding: 15px 20px;
+        width: 860px;
+    }
+
+    .section--basket .basket-wrapper {
+        margin-left: 0;
+    }
+}
+
+@media all and (max-width: 1150px) {
+    li.shop-categories__item .submenu-lvl2 {
+        left: 260px;
+        padding: 15px 20px;
+        width: 825px;
+    }
+}
+
+@media all and (max-width: 1100px) {
+    li.shop-categories__item .submenu-lvl2 {
+        left: 230px;
+        padding: 15px 20px;
+        width: 745px;
+    }
+
+    .header-menu-wrapper form {
+        max-width: max-content;
+        min-width: 440px;
+    }
+
+    .header-categories-block.categories {
+        width: 246px;
+    }
+}
+
+@media all and (max-width: 1025px) {
+    .footer-pr .col-lg-12 ul li:not(:last-child) {
+        margin-right: 10px;
+    }
+
+    .footer-pr .col-lg-12 ul li {
+        max-width: 100px;
+    }
+    .shop-menu{
+        display: none;
+    }
+    .header-menu-wrapper form {
+        min-width: 400px;
+    }
+    .banner-wrapper {
+        width: 100%;
+    }
+    .home-carousel {
+        min-height: auto;
+    }
+
+    .mega-menu .hover>.submenu-lvl2 {
+        display: none;
+    }
+    
+}
+ 
+@media only screen and (max-width: 1024px) {
+    
     .mega-menu__wrapper {
         position: fixed;
         top: 0;
@@ -16683,138 +16822,6 @@ section.project_development .form-group input[type="tel"] {
     }
 
 
-    .submenu-lvl2 {
-        min-height: calc(100vh - 209px);
-    }
-
-    .basket-wrapper {
-        min-width: 100px;
-    }
-    
-    .header-menu .cart-no {
-        right: 80px;
-    }
-
-}
- 
-
-@media all and (max-width: 1200px) {
-
-    .lang{
-        z-index: 10;
-    }
-
-    .basket-wrapper {
-        margin-left: 21px;
-    }
-    
-    .log-in-block {
-        margin-left: auto;
-        margin-right: 0;
-        order: 2;
-    }
-    
-    a.favorite-link {
-        margin-left: 15px;
-        margin-right: 0;
-        order: 2;
-    }
-    
-    .cookie-text p {
-        max-width: 75%;
-        margin-right: 0px;
-    }
-    .search_header {
-        margin-top: 0;
-    }
-    
-    .header-menu-wrapper form {
-        max-width: max-content;
-        min-width: 560px;
-        margin-left: 0;
-        margin-right: 25px;
-        order: 0;
-    }
-    
-    .search-label .fa {
-        top: 50%;
-    }
-    
-    .header-menu-wrapper form .search-label {
-        max-width: 100%;
-    }
-
-    .row.row__flex {
-        align-items: flex-start;
-    }
-    
-    .header-categories-block.categories {
-        width: 267px;
-    }
-
-    .home-carousel .swiper-wrapper .swiper-slide {
-        min-height: 510px;
-    }
-
-    li.shop-categories__item .submenu-lvl2 {
-        left: 270px;
-        padding: 15px 20px;
-        width: 860px;
-    }
-
-    .section--basket .basket-wrapper {
-        margin-left: 0;
-    }
-}
-
-@media all and (max-width: 1150px) {
-    li.shop-categories__item .submenu-lvl2 {
-        left: 260px;
-        padding: 15px 20px;
-        width: 825px;
-    }
-}
-
-@media all and (max-width: 1100px) {
-    li.shop-categories__item .submenu-lvl2 {
-        left: 230px;
-        padding: 15px 20px;
-        width: 815px;
-    }
-
-    .header-menu-wrapper form {
-        max-width: max-content;
-        min-width: 440px;
-    }
-
-    .header-categories-block.categories {
-        width: 246px;
-    }
-}
-
-@media all and (max-width: 1025px) {
-    .footer-pr .col-lg-12 ul li:not(:last-child) {
-        margin-right: 10px;
-    }
-
-    .footer-pr .col-lg-12 ul li {
-        max-width: 100px;
-    }
-    .shop-menu{
-        display: none;
-    }
-    .header-menu-wrapper form {
-        min-width: 400px;
-    }
-    .banner-wrapper {
-        width: 100%;
-    }
-    .home-carousel {
-        min-height: auto;
-    }
-}
- 
-@media only screen and (max-width: 1024px) {
     img {
         max-width: 200%;
     }
@@ -17333,6 +17340,19 @@ section.project_development .form-group input[type="tel"] {
 
     .order-successfully p {
         font-size: 13px;
+    }
+
+    li.submenu-lvl2__list-item {
+        position: relative;
+        width: 33.33333333333333333333%!important;
+        border-right: 1px solid #E2E2E2;
+        border-bottom: 1px solid #E2E2E2;
+        margin-bottom: 0;
+        min-height: 175px;
+        padding: 0 5px;
+        padding-top: 10px;
+        margin-bottom: 0;
+        text-align: center;
     }
 }
  
@@ -18143,6 +18163,23 @@ section.project_development .form-group input[type="tel"] {
 }
 
 @media only screen and (max-width: 767px) {
+    .carousel-client__about>div a {
+        font-size: 14px;
+        line-height: 18px;
+    }
+    
+    .carousel-client__about>div {
+        max-width: 57%;
+    }
+    
+    .home-carousel .swiper-wrapper .swiper-slide {
+        min-height: 245px;
+    }
+    
+    .carousel .carousel-caption {
+        background-color: transparent;
+    }
+
     .cookie-text p {
         max-width: 100%;
     }
