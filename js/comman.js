@@ -1386,6 +1386,10 @@ $(window).scroll(function () {
   }
 });
 
+// if ($(window).width() > 1255) {
+// }
+
+
 $(".shop-categories__list .shop-categories__item").hover(function () {
   $(this).toggleClass("hover");
 });
