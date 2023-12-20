@@ -2244,7 +2244,7 @@ section.status-check-user {
     font-size: 1.45em !important;
     font-family: FontAwesome !important;
     display: inline-block !important;
-    content: "пЂ…" !important;
+    content: "" !important;
     position: inherit !important;
     border: 0 !important;
     height: auto !important;
@@ -16699,6 +16699,10 @@ section.project_development .form-group input[type="tel"] {
  
 
 @media all and (max-width: 1200px) {
+
+    .lang{
+        z-index: 10;
+    }
 
     .basket-wrapper {
         margin-left: 21px;
