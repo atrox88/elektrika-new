@@ -16327,7 +16327,7 @@ section.project_development .form-group input[type="tel"] {
  
 @media all and (min-width: 1251px) {
     .mega-menu__wrapper {
-        /* display: none !important; */
+        display: none !important;
     }
 }
 
