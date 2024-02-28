@@ -23638,7 +23638,7 @@ section.project_development .form-group input[type="tel"] {
     }
 }
 
-@media only screen and (max-width: 425px) {
+@media only screen and (max-width: 555px) {
     .home-carousel .swiper-wrapper .swiper-slide {
         min-height: 243px;
     }
