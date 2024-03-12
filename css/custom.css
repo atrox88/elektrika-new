@@ -15387,7 +15387,7 @@ a.submenu-lvl2__block-title-link:hover span.submenu-lvl2__block-title-text {
     top: 0px;
     display: block;
     background: rgb(45, 45, 45);
-    z-index: 23;
+    z-index: 1;
 }
 
 .new-categories-box {
@@ -19961,6 +19961,8 @@ section.project_development .form-group input[type="tel"] {
         height: 100vh;
         background-color: #fff;
         right: 0px;
+        overflow-y: auto;
+        padding-bottom: 60px;
     }
 
     .header-categories-menu .logo img {
