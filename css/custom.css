@@ -18121,6 +18121,9 @@ section.project_development .form-group input[type="tel"] {
 }
 
 @media only screen and (max-width: 920px) {
+    a .submenu-lvl2__block-title-icon {
+        display: none;
+    }
     .home-carousel {
         min-height: auto;
     } 
@@ -20292,7 +20295,11 @@ section.project_development .form-group input[type="tel"] {
 
     .header-menu-wrapper form {
         width: 100%;
-        z-index: 999999999999;
+        z-index: 10;
+    }
+
+    .header-categories-menu {
+        z-index: 11;
     }
 
     .search_header {
@@ -23636,6 +23643,41 @@ section.project_development .form-group input[type="tel"] {
     a.product__rating {
         flex-basis: 160px;
         margin-left: 15px;
+    }
+
+    .mega-menu .shop-categories {
+        border: 0;
+        width: 100%;
+    }
+    
+    .mega-menu .shop-categories__item.active .submenu-lvl2 .row {
+        margin: 0;
+        padding: 0;
+    }
+    
+    .mega-menu .shop-categories__item.active .submenu-lvl2 {
+        padding: 0;
+        width: 100%;
+    }
+    
+    .shop-categories__title {
+        width: 100%;
+    }
+    
+    .mega-menu .shop-categories .shop-categories__list {
+        width: 100%;
+    }
+
+    html.no-scroll {
+        overflow: hidden;
+    }
+
+    li.submenu-lvl2__list-item:not(:last-child) {
+        margin-bottom: 0px;
+    }
+
+    .shop-categories li.active:not(:last-child) {
+        border-bottom: 0;
     }
 }
 
