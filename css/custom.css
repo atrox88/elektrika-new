@@ -23681,6 +23681,10 @@ section.project_development .form-group input[type="tel"] {
     .shop-categories li.active:not(:last-child) {
         border-bottom: 0;
     }
+
+    .categorijas-sub-menu .shop-categories__list {
+        display: none!important;
+    }
 }
 
 @media only screen and (max-width: 555px) {
