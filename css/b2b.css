@@ -5,7 +5,7 @@ body {
     background: #FAFAFA;
 }
 .b2b__hero {
-    background-image: url(../img/bg.png);
+    background-image: url(../images/bg.png);
     background-repeat: no-repeat;
     background-size: cover;
     display: flex;
@@ -235,7 +235,7 @@ body {
     margin-top: 40px;
 }
 .b2b__banner {
-    background-image: url(../img/bg3.png);
+    background-image: url(../images/bg3.png);
     background-repeat: no-repeat;
     background-size: cover;
     display: flex;
@@ -433,7 +433,7 @@ body {
     fill:#EF8D19
 }
 .b2b__form{
-    background-image: url(../img/bg13.png);
+    background-image: url(../images/bg13.png);
     background-repeat: no-repeat;
     background-size: cover;
     padding: 55px 55px;
@@ -442,7 +442,7 @@ body {
 }
 .b2b__form:after{
     content: '';
-    background-image: url(../img/bg14.png);
+    background-image: url(../images/bg14.png);
     background-repeat: no-repeat;
     position: absolute;
     right:0;
