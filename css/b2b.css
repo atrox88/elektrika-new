@@ -575,4 +575,106 @@ body {
         max-width: 100%;
         position: static;
     }
+    .b2b__hero-title {
+        font-size: 36px;
+    }
+    .b2b__hero-sub-title {
+        font-size: 16px;
+    }
+}
+@media (max-width:825px) {
+    .b2b__hero-right{
+        max-width: 230px;
+    }
+    .b2b__hero-title {
+        font-size: 36px;
+    }
+    .b2b__hero-sub-title {
+        font-size: 16px;
+    }
+    .b2b__hero-buttons p {
+       font-size: 14px;
+    }
+}
+@media (max-width:767px) {
+    .b2b__hero {
+        padding-top: 30px;
+        padding-bottom: 30px;
+    }
+    .b2b__welcome-left {
+        display: none;
+    }
+    .b2b__pr-grid {
+        width: 50%;
+    }
+    .b2b__pr-title {
+        padding-left: 15px;
+        font-size: 26px;
+        line-height: 33px;
+    }
+    .b2b__options {
+        flex-wrap: wrap;
+        gap:0
+    }
+    .b2b__options-grid {
+        width: calc(100% / 3);
+    }
+    .b2b__hero-right {
+        display: none;
+    }
+    .b2b__hero-left {
+        padding-left: 15px;
+        padding-right: 15px;
+        text-align: center;
+    }
+    .b2b__hero-buttons {
+        align-items: center;
+        gap: 15px 15px;
+        margin-top: 15px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .b2b__banner-right{
+        display: none;
+    }
+    .b2b__banner-left {
+        padding-left: 15px;
+        padding-right: 15px;
+    }
+    .b2b-padding {
+        padding-top: 25px;
+        padding-bottom: 25px;
+    }
+  
+}
+@media (max-width:576px) {
+    .b2b__pr-grid {
+        width: 100%;
+    }
+    .b2b__options {
+        flex-wrap: wrap;
+    }
+    .b2b__options-grid {
+        width: calc(100% / 2);
+        padding-top: 15px;
+        padding-bottom: 15px;
+    }
+    .d-submit {
+        flex-wrap: wrap;
+        gap: 20px 20px;
+    }
+    .b2b-btn {
+        padding: 15px 15px;
+        font-size: 16px;
+    }
+    .b2b__banner {
+        padding:25px 0
+    }
+    .b2b__products-block {
+        padding: 15px 15px;
+    }
+    .b2b__form {
+        padding:25px 25px;
+    }
+    
 }
