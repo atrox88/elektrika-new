@@ -682,6 +682,7 @@ body {
     .b2b__products-title {
         font-size: 16px;
         line-height: 18px;
+	height: 35px;
     }
     .b2b__products-manufacturer {
         font-size: 12px;
